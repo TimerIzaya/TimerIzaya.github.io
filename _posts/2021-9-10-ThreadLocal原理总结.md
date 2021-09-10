@@ -163,6 +163,8 @@ public class ThreadLocal<T> {
         * used, stale entries are guaranteed to be removed only when
         * the table starts running out of space.
         */
+       static class ThreadLocalMap {
+       }
    ```
 
    ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。它的一切操作仅仅限定在ThreadLocal内。这个类是包私有的，为了让Thread中可以声明此类。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。**
