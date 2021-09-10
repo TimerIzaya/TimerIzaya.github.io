@@ -20,12 +20,12 @@ tags:
 ### ThreadLocal是什么
 
 ```java
-* This class provides thread-local variables.  These variables differ from
-* their normal counterparts in that each thread that accesses one (via its
-* {@code get} or {@code set} method) has its own, independently initialized
-* copy of the variable.  {@code ThreadLocal} instances are typically private
-* static fields in classes that wish to associate state with a thread (e.g.,
-* a user ID or Transaction ID).
+ This class provides thread-local variables.  These variables differ from
+their normal counterparts in that each thread that accesses one (via its
+{@code get} or {@code set} method) has its own, independently initialized
+copy of the variable.  {@code ThreadLocal} instances are typically private
+static fields in classes that wish to associate state with a thread (e.g.,
+a user ID or Transaction ID).
 ```
 
 简单的说就是线程的局部变量。
@@ -148,23 +148,21 @@ public class ThreadLocal<T> {
 
    
 
-2. 为什么ThreadLocalMap要用静态子类？
+2. #### 为什么ThreadLocalMap要用静态子类？
 
    先ThreadLocalMap的注释：
 
    ```java
-    /**
-        * ThreadLocalMap is a customized hash map suitable only for
-        * maintaining thread local values. No operations are exported
-        * outside of the ThreadLocal class. The class is package private to
-        * allow declaration of fields in class Thread.  To help deal with
-        * very large and long-lived usages, the hash table entries use
-        * WeakReferences for keys. However, since reference queues are not
-        * used, stale entries are guaranteed to be removed only when
-        * the table starts running out of space.
-        */
-       static class ThreadLocalMap {
-       }
+   
+        ThreadLocalMap is a customized hash map suitable only for
+        maintaining thread local values. No operations are exported
+        outside of the ThreadLocal class. The class is package private to
+        allow declaration of fields in class Thread.  To help deal with
+        very large and long-lived usages, the hash table entries use
+        WeakReferences for keys. However, since reference queues are not
+        used, stale entries are guaranteed to be removed only when
+        the table starts running out of space.
+      
    ```
 
    ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。它的一切操作仅仅限定在ThreadLocal内。这个类是包私有的，为了让Thread中可以声明此类。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。**
