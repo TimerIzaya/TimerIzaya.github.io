@@ -98,7 +98,7 @@ service-worker: true
 
 friends: [
     {
-        title: "我的陶爷",
+        title: " 👉陶爷的小站",
         href: "https://mingasd.github.io/"
     }
 ]
