@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      ThreadLocal原理总结
-subtitle:   拿下ThreadLocal
+subtitle:   彻底拿下ThreadLocal
 date:       2021-9-10
 author:     Timer
 header-img: img/the-first.png
@@ -13,7 +13,7 @@ tags:
 
 
 
-#### 	总结一下ThreadLocal，它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念非常巧妙，值得深入理解。能作为面试轰炸机也不是空穴来风。
+### 	总结一下ThreadLocal，它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念非常巧妙，值得深入理解。能作为面试轰炸机也不是空穴来风。
 
 
 
@@ -38,7 +38,7 @@ a user ID or Transaction ID).
 
 #### 直觉上，线程局部变量可以有如下两种设计方案：
 
-1. Thread中设计一个KV容器，此容器的生命周期与线程保持同步，当给线程创建各种局部变量时，直接使用实例t.set()，当获得线程局部变量时，使用t.get()。
+1. Thread中设计一个KV容器，此容器的生命周期与线程保持同步，当给线程创建各种局部变量时，直接使用t.set()，当获得线程局部变量时，使用t.get()。
 
    ```java
    class TimerThread<T> extends Thread {
@@ -165,7 +165,7 @@ public class ThreadLocal<T> {
       
    ```
 
-   ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。它的一切操作仅仅限定在ThreadLocal内。这个类是包私有的，为了让Thread中可以声明此类。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。**
+   ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。它的一切操作仅仅限定在ThreadLocal内。这个类是包私有的，为了让Thread中可以声明此类。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。**但是，既然不使用引用队列了，那么只有当table的空间不足时旧的entries才会保证被删除。
 
  
 
