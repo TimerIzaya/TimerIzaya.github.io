@@ -152,7 +152,7 @@ public class ThreadLocal<T> {
 
    先ThreadLocalMap的注释：
 
-   ```java
+   ```
    
         ThreadLocalMap is a customized hash map suitable only for
         maintaining thread local values. No operations are exported
