@@ -13,13 +13,13 @@ tags:
 
 
 
-#### 	总结一下ThreadLocal，它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念值得深入理解。能作为面试轰炸机也不是空穴来风。
+#### 	总结一下ThreadLocal，它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念非常巧妙，值得深入理解。能作为面试轰炸机也不是空穴来风。
 
 
 
 ### ThreadLocal是什么
 
-```
+```java
 * This class provides thread-local variables.  These variables differ from
 * their normal counterparts in that each thread that accesses one (via its
 * {@code get} or {@code set} method) has its own, independently initialized
@@ -36,22 +36,92 @@ tags:
 
 
 
-##### 直觉上，线程局部变量可以有如下两种设计方案：
+#### 直觉上，线程局部变量可以有如下两种设计方案：
 
-1. Thread中设计一个KV容器，此容器的生命周期与线程保持同步，当给线程创建局部变量时，直接使用实例t.map.set()，当获得线程局部变量时，使用t.map.get()。
-2. 全局设计一个KV容器，K为各个线程的ID，V为我们要存储的局部变量。
+1. Thread中设计一个KV容器，此容器的生命周期与线程保持同步，当给线程创建各种局部变量时，直接使用实例t.set()，当获得线程局部变量时，使用t.get()。
 
-
-
-##### 实际上，这两种方案都有很大的缺点：
-
-1. 作为局部变量直接使用，**线程不安全**，线程A中如果有线程B的实例则可以直接调用B的局部变量，不够安全。另外，多余的key设计冗余。**这解释了：为什么Threadlocal不直接设计成Thread的成员变量呢？**
+   ```java
+   class TimerThread<T> extends Thread {
+   
+       private Map<Object, T> threadLocalMap = new ConcurrentHashMap<>();
+   
+       public void set(Object key, T value) {
+           threadLocalMap.put(key, value);
+       }
+   
+       public T get(Object key) {
+           return threadLocalMap.get(key);
+       }
+       
+   }
+   ```
 
    
 
-2. 全局设计的初衷是好的，JDK初代也是这样设计的，但是当线程高并发时，全局的KV结构就要线程安全而**牺牲部分性能**。另外，此全局KV不好保证threadlocal和thread拥有相同的生命周期，代码复杂度变高，设计冗余。**这解释了：为什么ThreadLocal在JDK1.7之后就不再采用全局设计了呢？**
+2. 每个线程局部变量全局设计一个KV容器，K为各个线程的ID，V为我们要存储的局部变量。
+
+```java
+class TimerThreadLocal<T>{
+	
+	//static保证此map能作用于所有线程
+    private static Map<Long, T> map = new ConcurrentHashMap<>();
+
+    public void set(T value){
+        map.put(Thread.currentThread().getId(), value);
+    }
+
+    public T get(){
+        return map.get(Thread.currentThread().getId());
+    }
+}
+
+class Thread{
+	TimerThreadLocal<T> threadLocal = null;
+}
+```
 
 
+
+#### 实际上，这两种方案都有很大的缺点：
+
+1. 线程局部变量作为成员变量直接使用，**不安全**，线程A中如果有线程B的实例则可以直接调用B的局部变量。另外，Key值如何取是个问题，可以直接把value值hash一下作为key值，但是这样设计较为冗余。**这解释了问题：为什么Threadlocal不直接设计成Thread的成员变量？**
+
+   
+
+2. 全局设计的初衷是好的，JDK初代也是这样设计的，但是当线程高并发时，全局的KV结构就要线程安全而**牺牲部分性能**，可以看到这里的map用了ConcurrentHashMap。另外，此全局KV不好保证map和thread拥有相同的生命周期，线程意外中断或者线程池复用，都是其弱点。**这也解释了问题：为什么ThreadLocal在JDK1.3之后就不再采用全局设计了？**
+
+
+
+
+
+#### 当前的设计方案：
+
+目前JDK里ThreadLocal设计其实是采用了上面说的两种方法的结合，设计的非常非常巧妙。
+
+ThreadLocal里含有一个静态子类ThreadLocalMap，就是Thread中的成员变量。
+
+```java
+//ThreadLocal values pertaining to this thread. This map is maintained by the ThreadLocal class.
+ ThreadLocal.ThreadLocalMap threadLocals = null;
+```
+
+从Thread源码看出，线程局部变量的实现最终还是在每个线程中放一个KV容器，也就是ThreadLocalMap。**而各个线程的Map是统一交给ThreadLocal去管理的。**
+
+ThreadLocal本身的作用，抛开其map子类，只是产生当前定义的线程局部变量实例的hash值，当用ThreadLocal定义下一个线程局部变量时，这个hash码会固定增长一个值，保证此hash的唯一性。
+
+```java
+public class ThreadLocal<T> {
+    
+    //比如我要创建一个线程局部变量arr[]，这个hashCode就是arr[]的key值
+    //在不同的线程中，都可以使用这个hashcode来获得不同线程中的arr[]
+    private final int threadLocalHashCode = nextHashCode();
+ 	
+    static class ThreadLocalMap {
+    	//实现
+    }
+    
+}
+```
 
 
 
