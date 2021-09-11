@@ -98,7 +98,9 @@ class Thread{
 
 目前JDK里ThreadLocal设计其实是采用了上面说的两种方法的结合，设计的非常非常巧妙。
 
-ThreadLocal里含有一个静态子类ThreadLocalMap，就是Thread中的成员变量。
+**本质上，KV容器存在于每个线程的内部，但是所有线程局部变量的管理，是全局的，由ThreadLocal统一管理。**
+
+ThreadLocal里含有一个静态子类ThreadLocalMap，作为Thread中的成员变量。
 
 ```java
 //ThreadLocal values pertaining to this thread. This map is maintained by the ThreadLocal class.
@@ -131,41 +133,59 @@ public class ThreadLocal<T> {
 
 这里的设计十分巧妙，首先使用一个固定增长的hashcode，解决了方案1中的key值怎么取的问题。其次，每个线程都拥有一个map变量，解决了线程局部变量和线程的生命周期同步的问题。
 
-除开这些总体的设计，代码中依然有很多值得学习的精妙小细节。
+除开这些总体的设计，代码中依然有很多值得学习的精妙细节。
 
-1. **为什么ThreadLocal中能获得Thread的map，安全吗？**
+#### 1.**为什么ThreadLocal中能获得Thread的map，安全吗？**
 
-   因为Thread的ThreadLocal是默认权限，默认权限代表在当前同级的包中可以获取，包外不行。而Thread和ThreadLocal同为java.lang包中，所以ThreadLocal可以直接拿到每一个线程的Map，用户无法直接获得每一个线程的Map，这也直接的体现了这样设计的安全性，以及ThreadLocal作为一个管理类的特点。
+因为Thread的ThreadLocal是默认权限，默认权限代表在当前同级的包中可以获取，包外不行。而Thread和ThreadLocal同为java.lang包中，所以ThreadLocal可以直接拿到每一个线程的Map，用户无法直接获得每一个线程的Map，这也直接的体现了这样设计的安全性，以及ThreadLocal作为一个管理类的特点。
 
-   这里贴一下类的权限表。
+这里贴一下类的权限表。
 
-   |           | **同一个类** | **同一个包** | **不同包的子类** | **不同包的非子类** |
-   | --------- | ------------ | ------------ | ---------------- | ------------------ |
-   | Private   | √            |              |                  |                    |
-   | Default   | √            | √            |                  |                    |
-   | Protected | √            | √            | √                |                    |
-   | Public    | √            | √            | √                | √                  |
+|           | **同一个类** | **同一个包** | **不同包的子类** | **不同包的非子类** |
+| --------- | ------------ | ------------ | ---------------- | ------------------ |
+| Private   | √            |              |                  |                    |
+| Default   | √            | √            |                  |                    |
+| Protected | √            | √            | √                |                    |
+| Public    | √            | √            | √                | √                  |
 
+
+
+#### 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
+
+先ThreadLocalMap的注释：
+
+```
+
+     ThreadLocalMap is a customized hash map suitable only for
+     maintaining thread local values. No operations are exported
+     outside of the ThreadLocal class. The class is package private to
+     allow declaration of fields in class Thread.  To help deal with
+     very large and long-lived usages, the hash table entries use
+     WeakReferences for keys. However, since reference queues are not
+     used, stale entries are guaranteed to be removed only when
+     the table starts running out of space.
    
+```
 
-2. #### 为什么ThreadLocalMap要用静态子类？
+翻译：ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。**它的一切操作仅仅限定在ThreadLocal内。为了让Thread中可以声明此类，这个类是包私有的。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。但是，既然不使用引用队列了，那么只有当table的空间不足时旧的entries才会保证被删除。
 
-   先ThreadLocalMap的注释：
+从注释中就可以得到解答：
 
-   ```
-   
-        ThreadLocalMap is a customized hash map suitable only for
-        maintaining thread local values. No operations are exported
-        outside of the ThreadLocal class. The class is package private to
-        allow declaration of fields in class Thread.  To help deal with
-        very large and long-lived usages, the hash table entries use
-        WeakReferences for keys. However, since reference queues are not
-        used, stale entries are guaranteed to be removed only when
-        the table starts running out of space.
-      
-   ```
+**Thread中的ThreadLocalMap是默认权限，保证同一包（java.lang)下的ThreadLocal可以获取到各个线程的map，来提供set和get操作，而用户无法直接操作Map。**
 
-   ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。它的一切操作仅仅限定在ThreadLocal内。这个类是包私有的，为了让Thread中可以声明此类。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。**但是，既然不使用引用队列了，那么只有当table的空间不足时旧的entries才会保证被删除。
+**ThreadLocalMap又是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，但是Thread又需要声明，所以需要加上静态属性。**
+
+这一波设计，环环相扣，精妙绝伦。
+
+
+
+#### 3.ThreadLocalMap到底定制在什么地方？直接用HashMap不行吗？
+
+
+
+
+
+
 
  
 
