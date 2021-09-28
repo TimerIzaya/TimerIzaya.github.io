@@ -183,17 +183,23 @@ public class ThreadLocal<T> {
 
 **ThreadLocalMap又是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，但是Thread又需要声明，所以需要加上静态属性。**
 
-这一波设计，环环相扣，精妙绝伦。
 
 
+#### 3. ThreadLocalMap定制在什么地方？
 
-#### 3.ThreadLocalMap到底定制在什么地方？直接用HashMap不行吗？
+3.1 Key值的弱引用
 
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/20210928234203.png" style="zoom: 50%;" />
 
+由于其设计的特殊性，ThreadLocalMap的Key值是ThreadLocal的对象，这意味着如果不使用ThreadLocal时，把它设为null值，GC不会收集它，因为ThreadLocalMap依然对这个Entry有强引用，所以这个Entry依然存在于线程实例中，产生了内存泄漏。
 
+**这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，也会跳过这个entry，创建一个新的entry。**
 
+这里的弱引用仅仅针对Key值，如果设为弱引用的话，那么把threadlocal的实例设为null之后，entry的key值也会被收集掉。
 
+**这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，发现了脏Entry（Stale Entry，也就是key == null的Entry），那么就会在这个位置再立门户。（详情见源码方法replaceStaleEntry）**
 
+但是即便如此，Value值也是处于泄漏状态。**所以，只有当线程对象被收集的时候，才能真正的解决内存泄漏。**
 
  
 
