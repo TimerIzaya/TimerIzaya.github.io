@@ -179,15 +179,28 @@ public class ThreadLocal<T> {
 
 <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/20210928234203.png" style="zoom: 50%;" />
 
-由于其设计的特殊性，ThreadLocalMap的Key值是ThreadLocal的对象，这意味着如果不使用ThreadLocal时，把它设为null值，GC不会收集它，因为ThreadLocalMap依然对这个Entry有强引用，所以这个Entry依然存在于线程实例中，产生了内存泄漏。
+由于其设计的特殊性，ThreadLocalMap的Key值是ThreadLocal的对象。
 
-**这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，也会跳过这个entry，创建一个新的entry。**
+可以看到Key的引用链有如下两条：
 
-这里的弱引用仅仅针对Key值，如果设为弱引用的话，那么把threadlocal的实例设为null之后，entry的key值也会被收集掉。
+- ThreadLocal -> Key
+- Thread -> ThreadLocalMap -> Entry -> Key
 
-**这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，发现了脏Entry（Stale Entry，也就是key == null的Entry），那么就会在这个位置再立门户。（详情见源码方法replaceStaleEntry）**
+**第一条引用链是用户使用的对象，必然是强引用。**
 
-但是即便如此，Value值也是处于泄漏状态。**所以，只有当线程对象被收集的时候，才能真正的解决内存泄漏。**  
+**第二条引用链是线程对象内部的引用。**
+
+**如果是强引用，那么当用户使用的ThreadLocal对象置null，因为这条强引用的存在，key值无法被回收。**
+
+这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，也会跳过这个entry，创建一个新的entry。
+
+**如果是弱引用，那么当用户使用的ThreadLocal对象置null，因为没有强引用的存在，entry的key值会被回收掉。**
+
+这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，发现了脏Entry（Stale Entry，也就是key == null的Entry），那么就会在这个位置再立门户。（详情见源码方法replaceStaleEntry）
+
+**但是即便如此，Value值也是一直处于泄漏状态。**
+
+**所以，只有当线程对象被收集的时候，才能真正的解决内存泄漏。**  
 
 
 
