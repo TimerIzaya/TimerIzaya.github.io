@@ -190,17 +190,31 @@ public class ThreadLocal<T> {
 
 **第二条引用链是线程对象内部的引用。**
 
-**如果是强引用，那么当用户使用的ThreadLocal对象置null，因为这条强引用的存在，key值无法被回收。**
+**如果Entry->Key是强引用，那么当用户使用的ThreadLocal对象置null，因为这条强引用的存在，key值无法被回收。**
 
 这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，也会跳过这个entry，创建一个新的entry。
 
-**如果是弱引用，那么当用户使用的ThreadLocal对象置null，因为没有强引用的存在，entry的key值会被回收掉。**
+**如果Entry->Key是弱引用，那么当用户使用的ThreadLocal对象置null，因为没有强引用的存在，entry的key值会被回收掉。**
 
 这代表：如果再声明一个一样的threadlocal变量，那么在当前线程的map中，发现了脏Entry（Stale Entry，也就是key == null的Entry），那么就会在这个位置再立门户。（详情见源码方法replaceStaleEntry）
 
-**但是即便如此，Value值也是一直处于泄漏状态。**
+```java
+        static class Entry extends WeakReference<ThreadLocal<?>> {
+            /** The value associated with this ThreadLocal. */
+            Object value;
 
-**所以，只有当线程对象被收集的时候，才能真正的解决内存泄漏。**  
+            Entry(ThreadLocal<?> k, Object v) {
+                super(k);
+                value = v;
+            }
+        }
+```
+
+Key值可以为null之后，这个Entry就会被认定为是脏Entry（Stale Entry）。在未来的set操作中，如果遇见脏Entry，则会自动清理。
+
+但是即便如此，也无法彻底解决问题内存泄漏的问题。因为Entry的分布足够均匀，所以每次set的时候不一定能碰见脏Entry。但如果不清除脏Entry，那Value值就会一直处于泄漏状态。
+
+**所以，只有当和ThreadLocalMap同样生命周期的线程对象被收集的时候，才能真正的解决内存泄漏。**  
 
 
 
