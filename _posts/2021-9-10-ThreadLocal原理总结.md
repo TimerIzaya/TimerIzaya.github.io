@@ -102,7 +102,7 @@ a user ID or Transaction ID).
 
 
 
-#### 当前JDK8的设计方案：
+## 当前JDK8的设计方案：
 
 目前JDK里ThreadLocal设计其实是采用了上面说的两种方法的结合，设计的非常巧妙。
 
@@ -141,9 +141,13 @@ public class ThreadLocal<T> {
 
 这里的设计十分巧妙，首先使用一个固定增长的hashcode，解决了方案1中的key值怎么取的问题。其次，每个线程都拥有一个map变量，解决了线程局部变量和线程的生命周期同步的问题。
 
-除开这些总体的设计，代码中依然有很多值得学习的精妙细节。
+除开这些总体的设计，代码中依然有很多值得学习的精妙细节。    
 
-#### 1.**为什么ThreadLocal中能获得Thread的map，安全吗？**
+  
+
+
+
+## 1.**为什么ThreadLocal中能获得Thread的map，安全吗？**
 
 因为Thread的ThreadLocal是默认权限，默认权限代表在当前同级的包中可以获取，包外不行。而Thread和ThreadLocal同为java.lang包中，所以ThreadLocal可以直接拿到每一个线程的Map，用户无法直接获得每一个线程的Map，这也直接的体现了这样设计的安全性，以及ThreadLocal作为一个管理类的特点。
 
@@ -156,9 +160,11 @@ public class ThreadLocal<T> {
 | Protected | √            | √            | √                |                    |
 | Public    | √            | √            | √                | √                  |
 
+  
 
 
-### 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
+
+## 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
 
 先ThreadLocalMap的注释：
 
@@ -183,11 +189,13 @@ public class ThreadLocal<T> {
 
 **ThreadLocalMap又是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，但是Thread又需要声明，所以需要加上静态属性。**
 
+  
 
 
-### 3. ThreadLocalMap定制在什么地方？
 
-**3.1 Key值的弱引用**
+## 3. ThreadLocalMap定制在什么地方？
+
+### **3.1 Key值的弱引用**
 
 <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/20210928234203.png" style="zoom: 50%;" />
 
@@ -203,7 +211,7 @@ public class ThreadLocal<T> {
 
  
 
-#### **3.2** 斐波那契散列法+寻址解决哈希碰撞
+### **3.2** 斐波那契散列法+寻址解决哈希碰撞
 
 ```java
     /**
