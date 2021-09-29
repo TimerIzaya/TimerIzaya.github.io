@@ -226,18 +226,18 @@ int magic = (int)(long) (Math.pow(2, 32) / 1.6180339887);
 
 做个试验看看这个散列到底有多屌：
 
-```
+```java
 class Solution {
 
     private static final int HASH_INCREMENT = 0x61c88647;
 
     public static void main(String[] args) {
-        int size = 1024;
+        int size = 1024 * 1024 * 2;
         System.out.println("计算个数：" + size);
         Set<Integer> set = new HashSet<>();
         int hashcode = 0;
         int count = 0;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size + 100; i++) {
             hashcode += Solution.HASH_INCREMENT;
             int index = hashcode & (size - 1);
             if(set.contains(index)){
