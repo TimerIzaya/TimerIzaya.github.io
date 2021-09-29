@@ -180,7 +180,7 @@ public class ThreadLocal<T> {
 
 **ThreadLocalMap是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，只能在ThreadLocal中使用。**
 
-**但是Thread又需要这个类的成员变量，所以ThreadLocalMap设为ThreadLocal静态子类，让Thread可以声明这个Map。**  
+**但是Thread又需要这个类的成员变量，所以ThreadLocalMap设为ThreadLocal静态子类，让Thread可以声明这个Map。**    
 
 
 
