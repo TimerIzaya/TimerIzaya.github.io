@@ -138,7 +138,7 @@ public class ThreadLocal<T> {
 
 
 
-## 1.**为什么ThreadLocal中能获得Thread的map，安全吗？**
+## 1.**为什么只有ThreadLocal才能获得Thread的map，安全吗？**
 
 因为Thread的ThreadLocal是默认权限，默认权限代表在当前同级的包中可以获取，包外不行。而Thread和ThreadLocal同为java.lang包中，所以ThreadLocal可以直接拿到每一个线程的Map，用户无法直接获得每一个线程的Map，这也直接的体现了这样设计的安全性，以及ThreadLocal作为一个管理类的特点。
 
@@ -155,7 +155,7 @@ public class ThreadLocal<T> {
 
 
 
-## 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
+## 2.为什么ThreadLocalMap是静态子类而不能单独作为一个类？
 
 先ThreadLocalMap的注释：
 
@@ -172,7 +172,7 @@ public class ThreadLocal<T> {
    
 ```
 
-翻译：ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。**它的一切操作仅仅限定在ThreadLocal内。为了让Thread中可以声明此类，这个类是包私有的。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。但是，既然不使用引用队列了，那么只有当table的空间不足时旧的entries才会保证被删除。
+翻译：ThreadLocalMap是一个仅仅用来管理线程局部变量的定制的hashmap。**它的一切操作仅仅限定在ThreadLocal内。为了让Thread中可以声明此类，所以这个类是包私有的。**为了处理大量的数据以及更长久的使用，它的entries对每个key使用弱引用。
 
 从注释中就可以得到解答：
 
