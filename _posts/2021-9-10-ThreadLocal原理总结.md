@@ -13,11 +13,13 @@ tags:
 
 
 
-### 	总结一下ThreadLocal，它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念非常巧妙，值得深入理解。能作为面试轰炸机也不是空穴来风。
+### 	总结一下ThreadLocal。
+
+### 	它和Hashmap都属于KV的不同实现方式，虽然不常用，但是其设计理念非常巧妙，值得深入理解。
 
   
 
-
+ `<br/>` 
 
 ### ThreadLocal是什么
 
@@ -38,7 +40,7 @@ a user ID or Transaction ID).
 
   
 
-
+ `<br/>` 
 
 #### 直觉上，线程局部变量可以有如下两种设计方案：
 
@@ -86,7 +88,7 @@ a user ID or Transaction ID).
 
    
 
-
+ `<br/>` 
 
 #### 实际上，这两种方案都有很大的缺点：
 
@@ -98,7 +100,7 @@ a user ID or Transaction ID).
 
 
 
-  
+   `<br/>` 
 
 
 
@@ -145,7 +147,7 @@ public class ThreadLocal<T> {
 
 
 
-
+ `<br/>` 
 
 ## 1.**为什么ThreadLocal中能获得Thread的map，安全吗？**
 
@@ -162,7 +164,7 @@ public class ThreadLocal<T> {
 
   
 
-
+ `<br/>` 
 
 ## 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
 
@@ -189,7 +191,7 @@ public class ThreadLocal<T> {
 
 **ThreadLocalMap又是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，但是Thread又需要声明，所以需要加上静态属性。**
 
-  
+   `<br/>` 
 
 
 
@@ -209,7 +211,7 @@ public class ThreadLocal<T> {
 
 但是即便如此，Value值也是处于泄漏状态。**所以，只有当线程对象被收集的时候，才能真正的解决内存泄漏。**
 
- 
+  `<br/>` 
 
 ### **3.2** 斐波那契散列法+寻址解决哈希碰撞
 
