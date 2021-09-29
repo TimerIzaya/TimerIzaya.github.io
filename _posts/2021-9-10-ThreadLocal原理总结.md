@@ -64,27 +64,27 @@ a user ID or Transaction ID).
 
 2. 每个线程局部变量全局设计一个KV容器，K为各个线程的ID，V为我们要存储的局部变量。
 
-```java
-class TimerThreadLocal<T>{
-	
-	//static保证此map能作用于所有线程
-    private static Map<Long, T> map = new ConcurrentHashMap<>();
+   ```
+   class TimerThreadLocal<T>{
+   	
+   	//static保证此map能作用于所有线程
+       private static Map<Long, T> map = new ConcurrentHashMap<>();
+   
+       public void set(T value){
+           map.put(Thread.currentThread().getId(), value);
+       }
+   
+       public T get(){
+           return map.get(Thread.currentThread().getId());
+       }
+   }
+   
+   class Thread{
+   	TimerThreadLocal<T> threadLocal = null;
+   }
+   ```
 
-    public void set(T value){
-        map.put(Thread.currentThread().getId(), value);
-    }
-
-    public T get(){
-        return map.get(Thread.currentThread().getId());
-    }
-}
-
-class Thread{
-	TimerThreadLocal<T> threadLocal = null;
-}
-```
-
-  
+   
 
 
 
@@ -102,9 +102,9 @@ class Thread{
 
 
 
-#### 当前的设计方案：
+#### 当前JDK8的设计方案：
 
-目前JDK里ThreadLocal设计其实是采用了上面说的两种方法的结合，设计的非常非常巧妙。
+目前JDK里ThreadLocal设计其实是采用了上面说的两种方法的结合，设计的非常巧妙。
 
 **本质上，KV容器存在于每个线程的内部，但是所有线程局部变量的管理，是全局的，由ThreadLocal统一管理。**
 
@@ -158,7 +158,7 @@ public class ThreadLocal<T> {
 
 
 
-#### 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
+### 2.为什么ThreadLocalMap要是静态子类不能单独作为一个类？
 
 先ThreadLocalMap的注释：
 
@@ -185,9 +185,9 @@ public class ThreadLocal<T> {
 
 
 
-#### 3. ThreadLocalMap定制在什么地方？
+### 3. ThreadLocalMap定制在什么地方？
 
-3.1 Key值的弱引用
+**3.1 Key值的弱引用**
 
 <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/20210928234203.png" style="zoom: 50%;" />
 
@@ -203,15 +203,75 @@ public class ThreadLocal<T> {
 
  
 
+#### **3.2** 斐波那契散列法+寻址解决哈希碰撞
+
+```java
+    /**
+     * The difference between successively generated hash codes - turns
+     * implicit sequential thread-local IDs into near-optimally spread
+     * multiplicative hash values for power-of-two-sized tables.
+     */
+    private static final int HASH_INCREMENT = 0x61c88647;
+```
+
+每当声明一个新的ThreadLocal对象，静态的hashcode就会固定增长一个上面的魔法数，十六进制的0x61c88647转换成十进制就是：1640531527。
+
+这个魔法值是怎么算出来的：
+
+```java
+int magic = (int)(long) (Math.pow(2, 32) / 1.6180339887);
+```
+
+1.6180339887为黄金分割数，斐波那契数列中的值越大，它除以上一个数的比值就越趋近这个黄金数。
+
+做个试验看看这个散列到底有多屌：
+
+```
+class Solution {
+
+    private static final int HASH_INCREMENT = 0x61c88647;
+
+    public static void main(String[] args) {
+        int size = 1024;
+        System.out.println("计算个数：" + size);
+        Set<Integer> set = new HashSet<>();
+        int hashcode = 0;
+        int count = 0;
+        for (int i = 0; i < size; i++) {
+            hashcode += Solution.HASH_INCREMENT;
+            int index = hashcode & (size - 1);
+            if(set.contains(index)){
+                count++;
+            }else{
+                set.add(index);
+            }
+        }
+        System.out.println("哈希散列发生碰撞：" + count);
+
+        set.clear();
+        count = 0;
+        for (int i = 0; i < size; i++) {
+            int index = String.valueOf(i).hashCode() & (size - 1);
+            if(set.contains(index)){
+                count++;
+            }else{
+                set.add(index);
+            }
+        }
+        System.out.println("普通哈希发生碰撞：" + count);
+    }
+}
+```
 
 
 
+|       数组长度       | 2^10 | 2^20   | 2^21   | 2^21       |
+| :------------------: | ---- | ------ | ------ | ---------- |
+|   生成hashcode个数   | 2^10 | 2^20   | 2^21   | 2^21 + 100 |
+| 斐波那契算法碰撞次数 | 0    | 0      | 0      | 100        |
+| 普通Hash算法碰撞次数 | 587  | 495578 | 986001 | 986001     |
 
-
-
-
-
-
+**完美到不可思议的均匀，完美证明了这个魔法数的注释：在2的N次方的表中，把threadlocal的id转换成几乎最优分布的乘法哈希值。**
 
 
 
