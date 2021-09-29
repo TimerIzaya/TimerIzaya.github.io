@@ -176,9 +176,11 @@ public class ThreadLocal<T> {
 
 从注释中就可以得到解答：
 
-**Thread中的ThreadLocalMap是默认权限，保证同一包（java.lang)下的ThreadLocal可以获取到各个线程的map，来提供set和get操作，而用户无法直接操作Map。**
+**Thread中的ThreadLocalMap是默认权限，保证同一包（java.lang)下的ThreadLocal可以获取到各个线程的map，来为用户提供set和get操作，而用户无法直接操作线程实例中的threadLocalMap。**
 
-**ThreadLocalMap是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，但是Thread又需要这个类的成员变量，所以ThreadLocalMap是ThreadLocal静态子类。**  
+**ThreadLocalMap是专门定做的类，不希望被单独拿出来使用，所以设计成ThreadLocal的内部类，只能在ThreadLocal中使用。**
+
+**但是Thread又需要这个类的成员变量，所以ThreadLocalMap设为ThreadLocal静态子类，让Thread可以声明这个Map。**  
 
 
 
