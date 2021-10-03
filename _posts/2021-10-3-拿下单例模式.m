@@ -1,13 +1,13 @@
 ---
 layout:     post
-title:      拿下单例模式
-subtitle:   设计模式里的"hello,world"
+title:      单例模式
+subtitle:   初入设计模式
 date:       2021-10-3
 author:     Timer
 header-img: img/the-first.png
 catalog: false
 tags:
-    - 设计模式
+    - Design Pattarn
 
 
 
@@ -16,7 +16,9 @@ tags:
 
 ---
 
-## 单例模式的作用
+## 对象已死？
+
+单例模式的作用
 
 - 保证一个类只有一个对象，作为唯一入口提供这个对象。  
 
