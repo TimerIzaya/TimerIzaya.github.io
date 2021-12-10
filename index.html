@@ -5,7 +5,8 @@ description: "Stay hungry, Stay foolish"
 
 
 
-{% for post in paginator.posts if post.title != "如果我的世界里没有你" %}
+{% for post in paginator.posts %}
+{% if post.title != "如果我的世界里没有你"}
 <div class="post-preview">
     <a href="{{ post.url | prepend: site.baseurl }}">
         <h2 class="post-title">
@@ -25,6 +26,7 @@ description: "Stay hungry, Stay foolish"
     </p>
 </div>
 <hr>
+{% endfor %}
 {% endfor %}
 
 <!-- Pager -->
