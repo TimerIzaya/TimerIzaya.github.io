@@ -98,17 +98,17 @@ javap -v Test.class
 
 ​	关于**字符串常量池**和运行时常量池的关系，GitHub有个非常经典的讨论，是某位大佬和周志明的对线：https://github.com/fenixsoft/jvm_book/issues/112
 
-​	**简单来说，两者不是一部分**。运行时常量池是方法区的一部分，而JDK1.7之后字符串常量池被移动到堆区。二者根本不是一个概念。
+​	**简单来说，两者不是一部分**。运行时常量池是方法区的一部分，而JDK1.7之后字符串常量池被移动到堆区。二者从存放位置来说不是一个概念。
 
 ​	在生成**运行时常量池**的时候，调用了intern()方法，所以一开始的**Class常量池**中的字符串能在**字符串常量池**中使用。CPP代码见下图
 
 <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20211215182812947.png" alt="image-20211215182812947" style="zoom:67%;" />
 
-​	到这里为止，常量池的大体脉络就理清楚了。
+​	到这里为止，三种常量池的大体脉络就理清楚了。
 
 ### 4.总结
 
-- Class文件常量池仅仅是一个静态的池，javac编译完，其内容也就确定了。
+- Class文件常量池仅仅是一个静态的文件，javac编译完，其内容也就确定了。
 - 运行时常量池在方法区，具体的说，jdk1.8中，它在元空间，也就是用户空间，也就是本地内存。
 - 字符串常量池在堆中，仅仅为字符串服务，和运行时常量池没有交集。
 
@@ -116,7 +116,7 @@ javap -v Test.class
 
 ## 深入理解 String::intern
 
-在Oracle的JVM规范中，对运行时常量池的解释中，有一个特殊的部分，就是字符串常量池。这段“**addition**”基本可以解决所有的无聊的字符串问题。简单对比翻译一下，同时加上自己的理解。
+在Oracle的JVM规范中，对运行时常量池的解释中，有一个特殊的部分，就是字符串常量池。这段“**addition**”基本可以解决所有的无聊的字符串问题。建议这部分英文规范详细阅读。
 
 > A string literal is a `reference` to an instance of class `String`, and is derived from a `CONSTANT_String_info` structure ([§4.4.3](https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4.3)) in the binary representation of a class or interface. The `CONSTANT_String_info` structure gives the sequence of Unicode code points constituting the string literal.
 >
@@ -131,7 +131,7 @@ javap -v Test.class
 > - If the method `String.intern` has previously been called on an instance of class `String` containing a sequence of Unicode code points identical to that given by the `CONSTANT_String_info` structure, then the result of string literal derivation is a `reference` to that same instance of class `String`.
 > - **Otherwise, a new instance of class `String` is created** containing the sequence of Unicode code points given by the `CONSTANT_String_info` structure; a `reference` to that class instance is the result of string literal derivation. Finally, the `intern` method of the new `String` instance is invoked.
 
-​	**一个字面字符串必须是一个String实例的引用，它可以从Class常量池的CONSTANT_String_info中。所谓的字面字符串（Literal String），实质上就是在编写代码的时候加上双引号的字符串。JAVA程序要求相同的字面字符串必须是同一个实例的引用。**
+​	**总结：一个字面字符串必须是一个String实例的引用，它可以从Class常量池的CONSTANT_String_info中。所谓的字面字符串（Literal String），实质上就是在编写代码的时候加上双引号的字符串。JAVA程序要求相同的字面字符串必须是同一个实例的引用。**
 
 **举个例子：**
 
