@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      彻底拿下常量池和intern()问题
-subtitle:   所有一知半解抄来抄去毫无根据的博客和网课就是恶心人
+subtitle:   看问题看明白，别人云亦云
 date:       2021-12-15
 author:     Timer
 header-img: img/the-first.png
