@@ -113,13 +113,151 @@ tags:
 
 说到底epoll是一个系统调用，在代码正儿八经写的时候，具体的实现最优雅的就是Reactor。
 
-#### 单线程版本的Reactor模型
+这里以最简单的EchoServer为例。
 
-![image-20220121003013016](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220121003013016.png)
+- 服务器端的ServerSocketChannel首先要注册到selector，用于接受新连接请求。同时其SeletionKey要过滤的信号为accept的IO活动。
+- 每当一个新连接接受后，就把用户端的SocketChannel也注册到selector，同时其SeletionKey要过滤的信号为read或者write的IO活动。
+- 每个SelectionKey都由对应的Handler处理，新连接的Key交给AcceptHandler，传输连接的Key交给对应的IOHandler。
+
+#### 单线程版本的Reactor模型（Scalable IO In Java）
+
+![](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220121003013016.png) 
+
+
+
+#### 单线程版本的Reactor模型（Java NIO 自行实现）
+
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220122023126899.png" alt="image-20220122023126899" style="zoom:80%;" /> 
+
+#### java.nio对应支持的类库
+
+- **Channel**：本质就是socket的fd
+- **Buffer**：通道的读写缓存
+- **Selector**：底层为poll/epoll，告诉你哪个channel有IO活动
+- **SelectionKey**：维护IO活动的状态
 
 
 
 
+
+#### ReactorServer实现：
+
+```java
+public class ReactorServer implements Runnable {
+
+    private Selector selector;
+
+    private ServerSocketChannel socketChannel;
+
+    ReactorServer() throws IOException {
+        selector = Selector.open();
+        socketChannel = ServerSocketChannel.open();
+        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 1024);
+        socketChannel.socket().bind(address);
+        socketChannel.configureBlocking(false);
+        //把serverSocket注册到selector，获得它的selectionKey，此sk用于维护当前serverSocket的IO状态
+        SelectionKey sk = socketChannel.register(selector, SelectionKey.OP_ACCEPT);
+        //对新请求sk，绑定一个接收处理器
+        sk.attach(new AcceptorHandler());
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (!Thread.interrupted()) {
+                System.out.println("select...");
+                selector.select();
+                Set<SelectionKey> selected = selector.selectedKeys();
+                Iterator<SelectionKey> it = selected.iterator();
+                while (it.hasNext()) {
+                    //Reactor负责dispatch收到的事件
+                    SelectionKey sk = it.next();
+                    dispatch(sk);
+                }
+                selected.clear();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 获得当前sk对应的handler
+    // 如果当前sk是accept，那么就执行AcceptorHandler对象的run方法
+    // 如果当前sk是read/write，那么就执行EchoHandler对象的run方法
+    public void dispatch(SelectionKey sk) {
+        Runnable handler = (Runnable) sk.attachment();
+        if (handler != null) {
+            handler.run();
+        }
+    }
+
+
+    //用于处理sk是accept的新连接
+    class AcceptorHandler implements Runnable {
+        @Override
+        public void run() {
+            try {
+                SocketChannel channel = socketChannel.accept();
+                if (channel != null) {
+                    new EchoHandler(selector, channel);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        new Thread(new ReactorServer()).start();
+    }
+}
+```
+
+
+
+#### EchoHandler实现
+
+```java
+class EchoHandler implements Runnable {
+    final SocketChannel channel;
+    final SelectionKey sk;
+    final ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+    static final int RECIEVING = 0, SENDING = 1;
+    int state = RECIEVING;
+
+    EchoHandler(Selector selector, SocketChannel c) throws IOException {
+        channel = c;
+        c.configureBlocking(false);
+        sk = channel.register(selector, 0);
+
+        sk.attach(this);
+
+        sk.interestOps(SelectionKey.OP_READ);
+        selector.wakeup();
+    }
+
+    public void run() {
+        try {
+            if (state == SENDING) {
+                channel.write(byteBuffer);
+                byteBuffer.clear();
+                sk.interestOps(SelectionKey.OP_READ);
+                state = RECIEVING;
+            } else if (state == RECIEVING) {
+                int length = 0;
+                while ((length = channel.read(byteBuffer)) > 0) {
+                    System.out.println(new String(byteBuffer.array(), 0, length));
+                }
+                byteBuffer.flip();
+                sk.interestOps(SelectionKey.OP_WRITE);
+                state = SENDING;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+}
+```
 
 
 
