@@ -56,7 +56,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 **1.对象自身运行时数据，也叫MarkWord。**
 
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 50%;" /> 
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 67%;" /> 
 
 **2.类型指针**，也就是instanceKlass。
 
@@ -66,7 +66,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 ## 重量级锁的底层实现原理：
 
-![image-20220130033435674](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130033435674.png)
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130033435674.png" alt="image-20220130033435674" style="zoom:80%;" />
 
 如果说synchronized底层是monitorenter和monitorexit，那么更底层就是Monitor对象的系统调用，Monitor也叫管程。
 
@@ -78,6 +78,39 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 
 
+## 锁优化1：轻量级锁
+
+轻量级锁是JDK 6时加入的，轻量级锁并不是用来代替重量级锁的。
+
+经过前辈们的研究发现大部分锁在整个同步周期内不存在锁竞争，在没有竞争的时候会使用**轻量级锁**，这样就可以减少开销了。
+
+轻量级锁包括偏向锁等等锁的实现都是利用**对象头**实现的。
+
+### 轻量级锁的工作过程
+
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130035402092.png" alt="image-20220130035402092" style="zoom:80%;" />
+
+1. 代码进入同步块时如果同步对象没被锁定，也就是标志位为01，JVM会在当前线程栈帧中建立一个LockRecord，LockRecord是一个线程内独享的存储，每一个线程都有一个可用LockRecord列表。
+
+   LockRecord包含了：
+
+   - **Displaced Mark Word**：也就是MarkWord的拷贝
+   - **Owner：**对象的markword
+
+2. 在Displaced Mark Word拷贝完成后，当前线程会用CAS把LockRecord对象的对象头和同步对象的对象互换，修改成功的线程将获得轻量级锁。失败则线程膨胀为重量级锁。
+
+3. #### 膨胀成重量级锁的过程
+
+   1. 为同步对象申请 Monitor 锁，让同步对象指向重量级锁地址。
+
+   2. 自己进入 Monitor 的 EntryList。
+
+   3. 当 Thread-0 退出同步块解锁时，使用 cas 将 Mark Word 的值恢复给对象头，失败。这时会进入重量级解锁
+
+      流程，即按照 Monitor 地址找到 Monitor 对象，设置 Owner 为 null，唤醒 EntryList 中 BLOCKED 线程
+
+   <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130035646444.png" alt="image-20220130035646444" style="zoom:80%;" />
+
 
 
 ## 锁优化1：自旋锁和自适应自旋锁
@@ -86,15 +119,21 @@ synchronized之所以是重量级的，最主要是因为线程挂起和唤醒�
 
 JVM开发团队发现在很多情况，锁只会持续很短的一段时间，那么这时候线程挂起和唤醒就不值得了。
 
+**重量级锁竞争的时候，还可以使用自旋来进行优化，如果当前线程自旋成功（即这时候持锁线程已经退出了同步块，释放了锁），这时当前线程就可以避免阻塞。**
+
 有了自旋锁，竞争线程不需要挂起和唤醒，而是进入一个忙循环，无限等待。
 
 这样的代价是：**会占用CPU**。因此自旋的时间必须要有个限度，超过这个限度就会恢复之前的挂起+唤醒的阻塞方法。
 
-这个限度JDK6后变成自适应了，如果一个竞争线程刚刚开始自旋就获得到了锁，那么就可以认为它下次可能再次成功，就给予他更多的自旋时间，如果它自旋很少获得过锁，那么可能直接忽略到自旋过程。随着程序运行时间的增长，JVM对自旋的时间就会预测的越来越精准。
+这个限度JDK6后变成自适应了，如果一个竞争线程刚刚开始自旋就获得到了锁，那么就可以认为它下次可能再次成功，就给予他更多的自旋时间，如果它自旋很少获得过锁，那么可能直接忽略到自旋过程。随着程序运行时间的增长，JVM对自旋的时间就会预测的越来越精准
+
+
 
 ## 锁优化2：锁消除
 
 **顾名思义，JVM在编译的时候，对于一些要求同步，但是对共享数据不存在竞争的锁进行消除操作。**锁消除的主要判定依据来源于**逃逸分析**的数据支持，如果判断到一段代码中，在堆上的所有数据都不会逃逸出去被其他线程访问到，那就可以把它们当作栈上数据对待，认为它们是线程私有的，同步加锁自然就无须再进行。
+
+
 
 ## 锁优化3：锁粗化
 
@@ -102,110 +141,12 @@ JVM开发团队发现在很多情况，锁只会持续很短的一段时间，�
 
 比如StringBuffer每次append都对内部代码块进行同步，其实指需要在所有append之前和之后加锁即可。
 
-## 锁优化4：轻量级锁
-
-轻量级锁是JDK 6时加入的，轻量级锁并不是用来代替重量级锁的。
-
-早期的jdk中synchronized底层会**转换为内核态**使用操作系统的互斥量来保证线程的安全，这种方式导致在没有多线程竞争的时候效率低下，轻量级锁的出现就是解决了这个问题。
-
-经过前辈们的研究发现大部分锁在整个同步周期内不存在锁竞争，在没有竞争的时候会使用**轻量级锁**而不是转为**内核态**，这样就可以减少开销了。
-
-轻量级锁包括偏向锁等等锁的实现都是利用**对象头**实现的。
 
 
+## 锁优化4：偏向锁
 
-### 轻量级锁的工作过程
+轻量级锁在没有竞争时（就自己这个线程），每次重入仍然需要执行 CAS 操作。
 
-1. 代码进入同步块时如果同步对象没被锁定，也就是标志位为01，JVM会在当前线程栈帧中建立一个Lock Record，LockRecord是一个线程内独享的存储，每一个线程都有一个可用`Monitor Record`列表。
-
-   Monitor Record包含了：
-
-   - **Displaced Mark Word**：也就是Mark Word的拷贝
-   - **Owner：**对象的markword
-
-2. 在Displaced Mark Word拷贝完成后，所有线程会利用CAS尝试将MarkWord的锁记录指针改为指向自己(线程)的锁记录，然后lockrecord的owner指向对象的markword，修改成功的线程将获得轻量级锁。失败则线程升级为重量级锁。   
-
-## 锁优化5：偏向锁
+Java 6 中引入了偏向锁来做进一步优化：**只有第一次使用 CAS 将线程 ID 设置到对象的 Mark Word 头，之后发现这个线程 ID 是自己的就表示没有竞争，不用重新 CAS。以后只要不发生竞争，这个对象就归该线程所有。**
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Moniter
-
-个人以为“获得锁”这种说法是有失偏颇的，如果把临界区代码看作是一个房间，用一个对象作为锁，把这个房间上锁，那么获得这个房间的使用权，这样的行为应该叫“获得钥匙“，但是既然说惯了，那就像”双亲委派“一样仅仅当个代号吧。
-
-而**Moniter**，就是房门的锁。用一段简单的代码为例：
-
-```java
-public class Solution {
-    static final Object lock = new Object();
-    static int counter = 0;
-
-    public static void main(String[] args) throws Exception {
-        synchronized (lock){
-            counter++;
-        }
-    }
-}
-```
-
-这个lock，就是作为临界区代码块的锁，lock对象头中指向重量级锁的指针便会指向Moniter对象。
-
-**Moniter对象有三个重要的成员变量：**
-
-1. Owner（当前锁所有者）
-2. EntryList（等待获得锁的线程）
-3. WaitSet（Waiting状态的线程）
-
-**争夺步骤：**
-
-1. 刚开始Moniter中的Owner为null
-2. 当t1执行synchronized (lock)就会把Moniter的所有者置为t1，一个Moniter只能有一个Owner。
-3. 在t1上锁的过程中，如果t2、t3、t4也来执行synchronized (lock)，就会进入entryList。
-4. 当t1执行完毕，entrylist中的线程会以非公平的方式争夺锁。
-
-**对代码的字节码进行分析：**
-
-```java
-  public static void main(java.lang.String[]) throws java.lang.Exception;
-    descriptor: ([Ljava/lang/String;)V
-    flags: ACC_PUBLIC, ACC_STATIC
-    Code:
-      stack=2, locals=3, args_size=1
-         0: getstatic     #2                   // 把lock push stack
-         3: dup							    // copy栈顶，再次push stack
-         4: astore_1						// pop stack，放到slot 1
-         5: monitorenter					// 把lock对象的MarkWord置为Moniter指针
-         6: getstatic     #3                  // 把counter push stack
-         9: iconst_1						// 把常数1 push stack
-        10: iadd							// pop + pop的结果push stack
-        11: putstatic     #3                  // pop结果赋予counter
-        14: aload_1							// 把slot1里之前存下的lock取出
-        15: monitorexit						// 重置markword，唤醒entrylist
-        16: goto          24
-        19: astore_2                          // 异常处理，把e放入slot 2
-        20: aload_1							// 加载slot里的lock
-        21: monitorexit						//重置markword，唤醒entrylist
-        22: aload_2
-        23: athrow
-        24: return
-```
