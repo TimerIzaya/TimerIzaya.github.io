@@ -13,7 +13,7 @@ tags:
 
 ---
 
-## 互斥同步
+## 互斥同步综述
 
 互斥同步是一种最常见的保证并发正确性的手段。
 
@@ -48,7 +48,35 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 ### 两者对比
 
-在JDK5之前，synchronized是比ReentrantLock吞吐量低的，但是在后续的优化中，两者基本持平。    
+在JDK5之前，synchronized是比ReentrantLock吞吐量低的，但是在后续的优化中，两者基本持平。      
+
+
+
+## Java对象头（以32位虚拟机为例）
+
+**1.对象自身运行时数据，也叫MarkWord。**
+
+<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 50%;" /> 
+
+**2.类型指针**，也就是instanceKlass。
+
+**3.如果是数组，**还需要一块保留长度的数据，这样虚拟机才可以判断出数组占用内存大小。  
+
+
+
+## 重量级锁的底层实现原理：
+
+![image-20220130033435674](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130033435674.png)
+
+如果说synchronized底层是monitorenter和monitorexit，那么更底层就是Monitor对象的系统调用，Monitor也叫管程。
+
+对象头中指向重量级锁的指针，也就是指向Monitor对象。
+
+- 如果当前Monitor的Owner为空，那么当前申请锁的线程就直接成为Owner。
+- 如果当前Monitor的Owner不为空，那么当前申请锁的线程进入阻塞状态，加入EntryList。
+- Waitset是已经申请过锁，但是条件不满足进入WAITING状态的线程。
+
+
 
 
 
@@ -84,15 +112,7 @@ JVM开发团队发现在很多情况，锁只会持续很短的一段时间，�
 
 轻量级锁包括偏向锁等等锁的实现都是利用**对象头**实现的。
 
-### Java对象头（以32位虚拟机为例）
 
-**1.对象自身运行时数据，也叫MarkWord。**
-
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 50%;" /> 
-
-**2.类型指针**，也就是instanceKlass。
-
-**3.如果是数组，**还需要一块保留长度的数据，这样虚拟机才可以判断出数组占用内存大小。  
 
 ### 轻量级锁的工作过程
 
