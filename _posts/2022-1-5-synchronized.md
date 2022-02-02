@@ -149,4 +149,42 @@ JVM开发团队发现在很多情况，锁只会持续很短的一段时间，�
 
 Java 6 中引入了偏向锁来做进一步优化：**只有第一次使用 CAS 将线程 ID 设置到对象的 Mark Word 头，之后发现这个线程 ID 是自己的就表示没有竞争，不用重新 CAS。以后只要不发生竞争，这个对象就归该线程所有。**
 
+偏向锁可以通过JOL来可视化对象头来观察。
+
+```java
+        System.out.println(ClassLayout.parseInstance(new Timer()).toPrintable());
+        TimeUnit.SECONDS.sleep(4);
+        System.out.println(ClassLayout.parseInstance(new Timer()).toPrintable());
+```
+
+```
+OFF  SZ               TYPE DESCRIPTION               VALUE
+  0   8                    (object header: mark)     0x0000000000000001 (non-biasable; age: 0)
+  8   4                    (object header: class)    0xf800c143
+
+
+OFF  SZ               TYPE DESCRIPTION               VALUE
+  0   8                    (object header: mark)     0x0000000000000005 (biasable; age: 0)
+  8   4                    (object header: class)    0xf800c143
+```
+
+前32个bit，也就是0到8字节是markword，后三位，无偏向为001，有偏向为101。
+
+### 偏向锁细节：
+
+一个对象的hashcode存在markword中的，markword只有在normal状态才会存hashcode。
+
+如果这个对象作为重量级锁，那么hashcode会存在monitor中。
+
+如果这个对象作为轻量级锁，那么hashcode会存在线程的LockRecord中。
+
+但是偏向锁的头部需要存线程ID占用大量空间，所以hashcode没地方存了，所以如果调动一个对象的hashcode方法时，就会**默认禁用它的偏向锁**。
+
+
+
+
+
+
+
+
 
