@@ -7,7 +7,7 @@ author:     Timer
 header-img: img/the-first.png
 catalog: false
 tags:
-
+    - private
 
 ---
 
