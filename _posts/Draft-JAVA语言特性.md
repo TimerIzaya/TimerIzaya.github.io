@@ -3,12 +3,10 @@ layout:     post
 title:      JAVA语言特性
 subtitle:   表达方式
 date:       2022-2-12
-author:     TimerIzaya
+author:     Timer
 header-img: img/the-first.png
 catalog: false
 tags:
-
-
 
 
 ---
