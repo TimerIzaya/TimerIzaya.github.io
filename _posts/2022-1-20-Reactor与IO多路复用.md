@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Reactor与IO多路复用
-subtitle:   所以为什么服务器要用Linux？
+subtitle:   
 date:       2022-1-20
 author:     Timer
 header-img: img/the-first.png
