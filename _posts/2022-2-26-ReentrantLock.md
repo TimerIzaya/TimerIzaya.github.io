@@ -236,3 +236,78 @@ protected final boolean tryAcquire(int acquires) {
 }
 ```
 
+##   
+
+## Condition的Await实现
+
+```java
+public final void await() throws InterruptedException {
+    if (Thread.interrupted())
+        throw new InterruptedException();
+    Node node = addConditionWaiter();
+    int savedState = fullyRelease(node);
+    int interruptMode = 0;
+    while (!isOnSyncQueue(node)) {
+        LockSupport.park(this);
+        if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+            break;
+    }
+    if (acquireQueued(node, savedState) && interruptMode != THROW_IE)
+        interruptMode = REINTERRUPT;
+    if (node.nextWaiter != null) // clean up if cancelled
+        unlinkCancelledWaiters();
+    if (interruptMode != 0)
+        reportInterruptAfterWait(interruptMode);
+}
+```
+
+##   
+
+## Condition的signal方法实现
+
+```java
+private void doSignal(Node first) {
+    //把ConditionObject里的链表清空，让他们全去竞争
+    do {
+        if ((firstWaiter = first.nextWaiter) == null){
+            lastWaiter = null;
+        }
+        first.nextWaiter = null;
+    } while (!transferForSignal(first) && (first = firstWaiter) != null);
+}
+
+final boolean transferForSignal(Node node) {
+	//因为等待的线程可能被打断或者超时，所以要CAS验证一下才可以transfer。
+    if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
+        return false;
+
+    Node p = enq(node);
+    int ws = p.waitStatus;
+    if (ws > 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
+        LockSupport.unpark(node.thread);
+    return true;
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
