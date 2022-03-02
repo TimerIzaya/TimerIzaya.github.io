@@ -1,6 +1,6 @@
 ---
 5layout:     post
-title:      MonitorPlus(JDK限定) -> Reentrantlock
+title:      Reentrantlock (MonitorPlus) (JDK限定)
 subtitle:   
 date:       2022-2-26
 author:     Timer
