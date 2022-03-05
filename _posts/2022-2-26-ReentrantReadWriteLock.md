@@ -1,5 +1,5 @@
 ---
-5layout:     post
+layout:     post
 title:      ReentrantReadWritelock、缓存和并发读写
 subtitle:   
 date:       2022-2-26
