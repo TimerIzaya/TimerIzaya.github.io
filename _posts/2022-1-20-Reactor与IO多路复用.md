@@ -125,13 +125,13 @@ tags:
 
 #### 单线程版本的Reactor模型（Scalable IO In Java）
 
-![](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220121003013016.png) 
+![](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220121003013016.png) 
 
 
 
 #### 单线程版本的Reactor模型（Java NIO 自行实现）
 
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220122023126899.png" alt="image-20220122023126899" style="zoom:80%;" /> 
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220122023126899.png" alt="image-20220122023126899" style="zoom:80%;" /> 
 
 #### java.nio对应支持的类库
 

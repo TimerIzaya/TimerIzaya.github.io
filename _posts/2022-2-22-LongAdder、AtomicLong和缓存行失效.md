@@ -167,4 +167,4 @@ LongAdderTest.testLongAdder  thrpt    2  1.410          ops/ns
 
 #### 官方测试
 
-![image-20220222171601768](https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220222171601768.png)
+![image-20220222171601768](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220222171601768.png)

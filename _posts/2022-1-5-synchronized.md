@@ -60,7 +60,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 **1.对象自身运行时数据，也叫MarkWord。**
 
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 67%;" /> 
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220105225617710.png" alt="image-20220105225617710" style="zoom: 67%;" /> 
 
 **2.类型指针**，也就是instanceKlass。
 
@@ -70,7 +70,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 ## 重量级锁的底层实现原理：
 
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130033435674.png" alt="image-20220130033435674" style="zoom:80%;" />
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220130033435674.png" alt="image-20220130033435674" style="zoom:80%;" />
 
 如果说synchronized底层是monitorenter和monitorexit，那么更底层就是Monitor对象的系统调用，Monitor也叫管程。
 
@@ -92,7 +92,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
 ### 轻量级锁的工作过程
 
-<img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130035402092.png" alt="image-20220130035402092" style="zoom:80%;" />
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220130035402092.png" alt="image-20220130035402092" style="zoom:80%;" />
 
 1. 代码进入同步块时如果同步对象没被锁定，也就是标志位为01，JVM会在当前线程栈帧中建立一个LockRecord，LockRecord是一个线程内独享的存储，每一个线程都有一个可用LockRecord列表。
 
@@ -113,7 +113,7 @@ Java线程是映射到OS的原生内核上的，如果要阻塞或者唤醒一�
 
       流程，即按照 Monitor 地址找到 Monitor 对象，设置 Owner 为 null，唤醒 EntryList 中 BLOCKED 线程
 
-   <img src="https://gitee.com/timerizaya/timer-pic/raw/master/img/image-20220130035646444.png" alt="image-20220130035646444" style="zoom:80%;" />
+   <img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220130035646444.png" alt="image-20220130035646444" style="zoom:80%;" />
 
 
 
