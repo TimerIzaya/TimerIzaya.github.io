@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Innodb与WiredTiger解析
+title:      Innodb与WiredTiger的一些疑问与思考
 subtitle:   重新认识数据库
 date:       2022-8-1
 author:     Timer
@@ -12,11 +12,13 @@ tags:
 
 ---
 
-### 常识
+### 为什么2009年推出的Mongo要在2014年收购WiredTiger？
 
-##### 为什么数据库中几乎不用MMAP？
+答案是**MMAP这条路走不下去了。**
 
-一次read()的过程：磁盘page -> 内存page cache -> 内存用户空间。
+先说一下什么是内存映射。
+
+一次正常的read()的过程：磁盘page -> 内存page cache -> 内存用户空间。
 
 一次MMAP的read()过程：磁盘page -> 内存page cache（用户直接操作page cache）。
 
@@ -40,11 +42,258 @@ tags:
 2. buffer置换策略
 3. 线程进程调度策略
 
-一个非常著名的例子，MongoDB初版用了MMAP作为数据库内核的IO方式，用了相当多的精力去弥补MMAP带来的缺陷，最后还是放弃了MMAP，四处筹钱买下了WiredTiger，从此一飞冲天。
+**这里的主动权描述还是比较笼统，举一个具体的例子：**
 
-用CMU 15-445课程讲师Andy的话来说：
+BufferPool的划分是以frame为单位的，一个frame其实就是一个page，只是叫法不同用于区分。
 
-> The OS is **not** your friend.
+BufferPool用于存储page，而PageTable用于管理page，本质就是一个hash表，根据pageId可以查到这个page在BufferPool的哪个frame里。
+
+PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter。
+
+**Dirty Flag**用于判断page是否做了修改，用于表示当前页面需要刷盘。
+
+**Pin Counter**是当前使用这个page的请求数量，用于表示当前page还不能刷盘。
+
+- 场景1：当某个page现在正在被使用，甚至可能是热点page，也就是pin counter > 0，但是mmap却可能突然刷盘。	
+
+- 场景2：当某个page被打上Dirty Flag，说明它做了修改，根据WAL的思想，我们需要先写完日志才能flush，mmap也可能突然刷盘。
+
+------
+
+**业界一个非常著名的例子**就是MongoDB，MongoDB初版用了MMAP作为数据库内核的IO方式，用了相当多的精力去弥补MMAP带来的缺陷，最后还是放弃了MMAP，四处筹钱买下了WiredTiger，从此一飞冲天。
+
+**另一个著名的例子**就是谷歌的LevelDB，后由Facebook收购，基于LevelDB研发了RocksDB，Facebook做的第一件事就是移除LevelDB的MMAP。
+
+用Andy Pavlo的话来说：
+
+> **The OS is not your friend.**
+
+
+
+
+
+### 已知WiredTiger的mvcc不需要持久化，为什么Innodb的mvcc需要持久化？
+
+因为innodb实现mvcc是对undolog进行了复用，undolog需要持久化。
+
+
+
+### WiredTiger为什么没有undolog？
+
+首先需要搞清楚undolog的作用。
+
+常年受八股文荼毒的话，说到innodb，一提及redo就是宕机恢复，一提及undo就是mvcc和事务回滚。
+
+其实应该反过来，一提及宕机恢复就该提到redo + undo。
+
+**宕机恢复需要保证的是ACID中的AD。也就是已提交的事务宕机后依然存在（D），未提交事务的修改宕机后不存在（A）。**
+
+
+
+
+
+### WiredTiger没有undolog是怎么做的事务回滚？
+
+
+
+
+
+
+
+
+
+
+
+
+
+文本解释了：**为什么wiredtiger的redolog是逻辑日志，innodb的redolog是物理日志？**
+
+
+
+### 物理日志、逻辑日志定义
+
+##### 物理日志
+
+举例：**Page 42:image at 367,2; before:'ab';after:'cd'**  
+
+作用：把42号page的367、368字节从ab变成cd
+
+特点：幂等
+
+##### 逻辑日志
+
+比物理日志更高层的抽象，可以看做是Sql语句。
+
+一个逻辑日志可以对应多个物理日志。但多个物理日志不一定能对应一个逻辑日志。
+
+特点：数据量小，所以适合IO吞吐量、网络带宽要求高的地方，所以用于同步binLog必然是逻辑日志。
+
+
+
+### Innodb的RedoLog为什么用物理日志更合适？
+
+1. **幂等性：**因为我们无法得知在事务执行期间，哪些page刷盘了。**所以redo重放必须是可重复的，也就是要保证幂等性。**
+2. **并发重放：**物理日志的执行单位是page，**所以在重放的时候可以并发重放**，简单理解就是page和page之间是并行的，一个page内的执行操作是串行的。而逻辑日志由于一条日志可能对应多个page，所以无法并发，只能整体串行。
+
+### Innodb的RedoLog是纯物理日志吗？（待补充）
+
+当然不是。物理日志的优势在于幂等和页并发。但是页内的日志重发是串行的。16k的页极限情况下可能的日志量能上万，这样串行效率就非常低了。
+
+### Innodb的UndoLog为什么用逻辑日志更合适？
+
+1. 物理日志量会更大，所以redo log设计成了循环写，否则会占用大量空间。
+2. 
+
+
+
+
+
+
+
+
+
+
+
+文本解释了：**为什么innodb的undolog需要持久化？**
+
+原因：**不考虑mvcc，innodb通过redolog和undolog的持久化保证了数据库的“高性能”宕机恢复能力，从而把事务数据的持久化操作分离，从最朴素的“同步的单次大量随机写” 优化到了 “异步的多次小量随机写 + 部分连续page顺序写”。**
+
+
+
+## 数据库故障恢复需要保证：
+
+1. Durability of Updates，持久性：已提交事务的修改，恢复后依然存在
+2. Failure Atomic，原子性：未提交事务的的修改，恢复后不存在
+
+## 最朴素的做法
+
+Commit时强制刷脏页，会产生大量随机写操作，性能很差。但是也能保证。
+
+## WAL
+
+**行为：**先写日志，后刷盘。
+
+**目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
+
+**分类：**Log中还需要记录Commit的标记，判断事务的状态，所以根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
+
+1. **Undo-Only Logging**
+
+   ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
+
+   ​		这种做法有两个坏处：
+
+   ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
+
+   ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
+
+2. **Redo-Only Logging**
+
+   ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
+
+   ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
+
+3. **Redo-Undo Logging**
+
+   ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
+
+   ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
+
+   ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
+
+   ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
+
+   ​		总结一下，Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补，业界关于Commit时是否要强制刷盘统称为Force、No-Force，关于Commit前能否提前刷盘称为No-Steal、Steal。**Force保证了持久性，No-Steal保证了原子性。**
+
+   ​	**所以排列组合有四种保证数据库宕机恢复的方式：**
+
+   1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
+   2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
+   3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
+   4. Force + No-Steal，意味着只能在commit时全量刷盘
+
+   
+
+   ## ARIES
+
+   ​	92年的老论文，被誉为数据库领域的成人礼，通篇69页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能，可以说每个商用数据库必备的。
+
+   ​	ARIES算法的关键：
+
+   1. **WAL Protocol**
+
+      由于ARIES整体是No-Force+Steal的设计，所以刷盘时机由BM（BufferManger）管理。BM只需要遵守WAL协议就行。
+
+      1. 协议内容一：对于某个Page，刷盘之前，必须保证对这个页面对应的所有undo log全部刷盘。
+      2. 协议内容二：事务提交之前，必须保证redo log全部刷盘。
+
+   2. **Compensation Log Record**
+
+      ARIES的Log Record有三种，Redo/Undo/CLR，CLR是ARIES的关键之一。
+
+      当rollback使用Undo Log的时候，每执行一条Undo恢复操作，就要记录一条CLR记录。这是因为undo只是逻辑日志，并不指定要修改哪个页面，而CLR是物理日志，相当于是undo翻译后的结果，也可以看做是undo过程的redo日志。
+
+      这么做的原因是，宕机恢复的过程中，依然可能产生嵌套宕机的情况，而undo由于是逻辑日志，无法保证幂等性，所以需要CLR来保证幂等性。
+
+      比如事务只有一个-1和+1操作，那undo记录的就是与之相反+1和-1，如果undo在执行到+1的时候再次宕机，那么再次执行的时候则可以根据CLR得知已经+1过了，避免再次+1的情况。
+
+      
+
+   ​	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
