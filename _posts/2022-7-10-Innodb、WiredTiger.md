@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      Innodb与WiredTiger的一些疑问与思考
+title:      WiredTiger引擎解析
 subtitle:   重新认识数据库
 date:       2022-8-1
 author:     Timer
@@ -12,7 +12,7 @@ tags:
 
 ---
 
-### 为什么2009年推出的Mongo要在2014年收购WiredTiger？
+## 为什么Mongo用WiredTiger？
 
 答案是**MMAP这条路走不下去了。**
 
@@ -67,6 +67,269 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 用Andy Pavlo的话来说：
 
 > **The OS is not your friend.**
+
+
+
+## WiredTiger优势
+
+1. **无锁并行框架：**充分利用 CPU 并行计算的内存模型的无锁并行框架，使得 WT 引擎在多核 CPU 上的表现优于其他存储引擎。
+2. **磁盘优化算法：**WT 实现了一套基于 BLOCK/Extent 的友好的磁盘访问算法，使得 WT 在数据压缩和磁盘 I/O 访问上优势明显。
+3. **简化事务模型：**实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，摒弃了传统的事务锁隔离又同时能保证事务的 ACID。
+4. **高效缓存模型：**WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。
+
+<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_insert_aws.png" alt="Pretty Pictures" style="zoom: 33%;" />
+
+<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_query_aws.png" alt="Pretty Pictures" style="zoom: 33%;" />
+
+
+
+## 性能优化的几个维度
+
+1. 去重量锁，轻量化，最好无锁化
+2. 去随机IO
+3. 缓存性能拉满，不局限于内存，包括CPU Cache
+4. 数据压缩
+
+## WiredTiger引擎存储结构
+
+#### B+Tree的优点：
+
+1. 优化IO次数，三层的B+Tree能支持存储千万级别的数据
+2. 方便范围查询
+
+#### B+Tree的缺点：
+
+1. 随机写入性能差
+
+#### LSM
+
+// todo 待补充
+
+#### 总结：
+
+<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/LSM_btree_Throughput.png" alt="漂亮的图片" style="zoom: 33%;" /> 
+
+1. 如果有大量的写操作的需求，则LSM是一种替换BTREE 更好的选择
+2. Btree 的数据存储结构方式在大部分情况中是可以满足,写入和查询的需求的
+3. 如果数据库中的collections 的需求比较复杂,则可以在一个DATABASE中选择适合的 lsm 和 btree 混合的模式
+
+#### LSM的使用
+
+1. 创建LSM结构的Collection
+
+   ```shell
+   db.createCollection(
+       "lsm_stroage",
+       { storageEngine: { wiredTiger: {configString: "type=lsm"}}}
+   )
+   ```
+
+2. 创建LSM结构的Index
+
+   ```shell
+   db.lsm_stroage.createIndex(
+       { value: 1 },
+       { storageEngine: { wiredTiger: {configString: "type=lsm"}}}
+   )
+   ```
+
+3. 2k连接，每个连接插入20w数据持续一分钟
+
+   | Query                             | Result |
+   | --------------------------------- | ------ |
+   | db.lsm_storage.find({}).count()   | 107895 |
+   | db.btree_storage.find({}).count() | 56157  |
+
+   
+
+   ## WiredTiger事务前置知识-WAL
+
+   **行为：**先写日志，后刷盘。
+
+   **目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
+
+   **分类：**根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
+
+   1. **Undo-Only Logging**
+
+      ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
+
+      ​		这种做法有两个坏处：
+
+      ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
+
+      ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
+
+   2. **Redo-Only Logging**
+
+      ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
+
+      ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
+
+   3. **Redo-Undo Logging**
+
+      ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
+
+      ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
+
+      ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
+
+      ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
+
+      ​		总结一下，Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补，业界关于Commit时是否要强制刷盘统称为Force、No-Force，关于Commit前能否提前刷盘称为No-Steal、Steal。**Force保证了持久性，No-Steal保证了原子性。**
+
+      ​	**所以排列组合有四种保证数据库宕机恢复的方式：**
+
+      1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
+      2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
+      3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
+      4. Force + No-Steal，意味着只能在commit时全量刷盘
+
+   
+
+   
+
+   
+
+## WiredTiger引擎事务实现
+
+#### 事务实现的核心
+
+1. snapshot
+2. MVCC
+3. redo log
+
+#### 单个事务对象
+
+```c
+wt_transaction{
+	transaction_id:    用于标识数据的版本号 （mvcc）
+	snapshot_object:   当前事务开始时其他未提交事务集合（snapshot）
+	operation_array:   本次事务中已执行的操作,用于事务回滚（mvcc）
+	redo_log_buf:      操作日志缓冲区。用于事务提交后的持久化（redo log）
+	State:             事务当前状态
+}
+```
+
+#### 全局事务管理器
+
+```
+struct __wt_txn_global {
+    current; // 当前最新的txnId
+    oldest_id; // 最早产生的还在执行的写事务Id
+    transaction_array; // 保存系统中所有的事务对象
+    scan_count; // 正在扫描transaction_array数组的线程数，用于建立snapshot过程的无锁并发
+};
+```
+
+#### SnapShot实现
+
+**这里第一个无锁化的点**就在于创建snapshot时的scan_count。
+
+开启事务的时候，事务ID是默认的`WT_TNX_NONE(= 0)`。当第一次执行写操作的时候，全局事务管理器给它分配一个唯一id。
+
+创建一个snapshot的流程：
+
+1. CAS判断scan_count是否为0，不为0则自旋
+2. 如果为0，则系统调用CAS_ADD把scan_count加1
+3. 扫描 transaction_array，获得所有事务ID不为0的事务。
+
+#### MVCC实现
+
+WT的MVCC本质就是个链表，记录txnId和修改的数据。
+
+每次当我们get一个value的时候，依次遍历链表寻找合适版本的数据即可。
+
+这里需要注意的是：**MVCC仅仅存在于内存中**
+
+```
+struct __wt_update {
+
+    volatile uint64_t txnid; //事务ID
+
+    WT_UPDATE *next; // 链表结构
+
+    uint8_t data[]; // 更新的值
+};
+```
+
+#### 事务执行
+
+更新一个值的流程
+
+1. 创建一个MVCC对象update
+2. 判断是否被分配事务ID，如果没有则分配，并把事务状态设为HAS_TXN_ID
+3. 事务的ID作为MVCC对象的版本号
+4. 创建一个operation对象，指针指向update，并存入operation_array
+5. 将MVCC对象设为当前MVCC链表头
+6. 写一条redo log到redo_log_buf
+
+#### 事务提交
+
+由于WT属于Redo + No-Steal类型，所以事务提交时不用考虑数据持久化，只要把日志持久化就可以。完整步骤为：
+
+1. 把redo_log_buf写入redo log file并持久化
+2. 清除snapshot
+3. 事务ID设为WT_TNX_NONE，也就是0，保证其它事务可见
+
+#### 事务回滚
+
+事务回滚有两种含义：
+
+1. 事务执行中偷刷的数据，需要回滚，这里指的是磁盘里的数据
+2. 事务执行中内存里修改的数据，需要回滚
+
+很明显WT由于是No-Steal，所以并不需要考虑偷刷的情况，直接对内存里的数据操作即可。
+
+具体操作为：遍历operation_array，对每个operation的update的事务ID设为一个*WT_TXN_ABORTED(= uint64_max)*，表示这个修改被回滚了，其他事务读MVCC的时候，跳过这个值就OK。
+
+整个过程无锁、高效。
+
+#### 事务的隔离级别
+
+1. **Read-uncommited**
+2. **Read-commited**
+3. **Snapshot-Isolation**
+
+这三种隔离级别都可以适用于读，但是写的话只能用快照隔离。快照隔离有如下特征：
+
+1. 只读快照里的数据
+2. 对事务不可见的数据做修改，会失败+回滚
+3. 对事务可见但是写冲突的数据做修改，会失败+回滚
+
+从事务隔离这个角度看，WT 并没有使用传统的事务独占锁和共享访问锁来保证事务隔离，而是通过对系统中写事务的 snapshot 来实现。这样做的目的是在保证事务隔离的情况下又能提高系统事务并发的能力。
+
+#### 事务日志
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -143,10 +406,6 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
 1. 物理日志量会更大，所以redo log设计成了循环写，否则会占用大量空间。
 2. 
-
-
-
-
 
 
 
