@@ -176,19 +176,25 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
       ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
 
-      ​		总结一下，Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补，业界关于Commit时是否要强制刷盘统称为Force、No-Force，关于Commit前能否提前刷盘称为No-Steal、Steal。**Force保证了持久性，No-Steal保证了原子性。**
+   #### 总结：
 
-      ​	**所以排列组合有四种保证数据库宕机恢复的方式：**
+   Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补。
 
-      1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
-      2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
-      3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
-      4. Force + No-Steal，意味着只能在commit时全量刷盘
-
+   业界把Commit时是否要强制刷盘统称为Force、No-Force，把Commit前能否提前刷盘称为No-Steal、Steal。
    
-
+   Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
    
-
+   所以排列组合有四种保证数据库宕机恢复的方式：**
+   
+   1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
+   2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
+   3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
+   4. Force + No-Steal，意味着只能在commit时全量刷盘
+   
+   **Wiredtiger属于Redo + No-Steal类型，所以WT没有undo log。**
+   
+   **Innodb属于Redo + Undo类型。**
+   
    
 
 ## WiredTiger引擎事务实现
