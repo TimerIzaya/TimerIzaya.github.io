@@ -189,8 +189,6 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
    
 
-   
-
 ## WiredTiger引擎事务实现
 
 #### 事务实现的核心
@@ -299,7 +297,46 @@ struct __wt_update {
 
 从事务隔离这个角度看，WT 并没有使用传统的事务独占锁和共享访问锁来保证事务隔离，而是通过对系统中写事务的 snapshot 来实现。这样做的目的是在保证事务隔离的情况下又能提高系统事务并发的能力。
 
-#### 事务日志
+#### 总结
+
+1. WT在并发创建事务、并发执行事务，都做了去重量锁的优化，保证了事务的高效执行，至于并发提交，涉及到日志的部分，放在下文讲解。
+2. WT使用SnapShot-Isolation，本质是因为处理并发写的时候，如果不抛异常，就要做行锁、间隙锁等等重量锁去处理，这种隔离方式也是一种并发优化。
+
+
+
+## WiredTiger引擎日志实现
+
+由事务的分析可以知道，WiredTiger在事务过程中的修改都是发生在MVCC List上的，属于内存操作。
+
+由于它选择了No-Steal的模式，所以它的持久化只需要关注redo log能否在事务提交的时候刷盘即可。
+
+#### 日志格式
+
+WT定义了一个LSN，这个LSN和Innodb中不断增长的LSN不同，WT中的LSN定义是文件ID和文件中的offset。
+
+```c
+wt_lsn{
+    file // 确认日志文件
+    offset // 确认日志文件内偏移位置
+}
+```
+
+WT中一个事务对应一个操作日志对象（log record），这里简称**logrec**。
+
+WT事务中一个操作对应一个**logop**对象，所以一个logrec包含多个logop。
+
+logop有多个类型：
+
+1. logrec_checkpoint：建立checkpoint
+2. logrec_commit：事务内的操作，其中还分为PUT类型（增加或者修改），REMOVE类型（删除）
+3. logrec_file_sync：page刷盘日志
+4. logrec_message：提供给引擎外部的日志
+
+// todo 这里需要一个图来展示一下
+
+#### 事务提交时的并发写
+
+#### 日志和checkpoint的关系
 
 
 
@@ -324,52 +361,6 @@ struct __wt_update {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-### 已知WiredTiger的mvcc不需要持久化，为什么Innodb的mvcc需要持久化？
-
-因为innodb实现mvcc是对undolog进行了复用，undolog需要持久化。
-
-
-
-### WiredTiger为什么没有undolog？
-
-首先需要搞清楚undolog的作用。
-
-常年受八股文荼毒的话，说到innodb，一提及redo就是宕机恢复，一提及undo就是mvcc和事务回滚。
-
-其实应该反过来，一提及宕机恢复就该提到redo + undo。
-
-**宕机恢复需要保证的是ACID中的AD。也就是已提交的事务宕机后依然存在（D），未提交事务的修改宕机后不存在（A）。**
-
-
-
-
-
-### WiredTiger没有undolog是怎么做的事务回滚？
-
-
-
-
-
-
-
-
-
-
-
-
-
-文本解释了：**为什么wiredtiger的redolog是逻辑日志，innodb的redolog是物理日志？**
 
 
 
