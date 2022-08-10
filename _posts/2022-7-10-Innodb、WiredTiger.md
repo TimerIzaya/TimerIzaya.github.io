@@ -197,7 +197,7 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
    
 <<<<<<< HEAD
 =======
-   
+
 >>>>>>> 8520d2d6426907504884f1f73470a2c9c573d45a
 
 ## WiredTiger引擎事务实现
@@ -343,9 +343,48 @@ logop有多个类型：
 3. logrec_file_sync：page刷盘日志
 4. logrec_message：提供给引擎外部的日志
 
-// todo 这里需要一个图来展示一下
+LogRocrd总结结构如图所示：
 
-#### 事务提交时的并发写
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220810222834765.png" alt="image-20220810222834765" style="zoom: 80%;" /> 
+
+#### 事务提交时的并发写优化
+
+事务提交的完整流程：
+
+1. 事务执行第一个写操作时，会现在redo_log_buf的缓冲区上创建一个logrec对象，并且事务类型设置为LOGREC_COMMIT
+2. 每个写操作生成一个logop对象，加入到logrec。
+3. 事务提交时，把logrec写入到全局log对象里的slot buffer中等待写完成的信号。
+4. **slot buffer会根据并发的情况合并同时提交的logrec，批量刷盘，然后通知对应所有的事务刷盘完成。**
+
+可以看出核心在于slot buffer对并发提交的处理。
+
+Wiredtiger在全局log对象中定义了一个active_slot和slot_pool数组结构，如下所示：
+
+```c
+wt_log{
+    active_slot: // 可以用的slot buffer对象
+    slot_pool: // slot buffer数组，包括正在合并的、准备合并和闲置的slot buffer。
+}
+```
+
+slot buffer定义如下：
+
+```c
+wt_log_slot{
+    state // 当前 slot 的状态，ready/done/written/free 这几个状态
+    buf: // 缓存合并 logrec 的临时缓冲区
+    group_size: // 需要提交的数据长度
+    slot_start_offset: // 合并的logrec存入log file中的偏移位置
+}
+```
+
+另外提一句，国内喜欢用桶（bucket）称呼，国外喜欢用slot（槽）称呼，本质都是一种将集中请求分散化的手段。
+
+并发写入过程如图：
+
+![image-20220811002908056](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220811002908056.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+
+这里还要提的一点是，对于大事务，也就是超过256KB的事务，直接写入磁盘，不需要走缓存。
 
 #### 日志和checkpoint的关系
 
