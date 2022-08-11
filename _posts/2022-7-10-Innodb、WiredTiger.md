@@ -398,6 +398,28 @@ wt_log_slot{
 
 
 
+## WiredTiger引擎内存页面
+
+传统的关系型数据库的page都是磁盘和内存对齐的，比如innodb是16KB。访问这些页面的时候要严格遵守一定的规则：
+
+- 修改一个page需要获得该页的x-latch
+- 访问一个page需要获得该页的s-latch或者x-latch
+
+WiredTiger为了获得更好的并发性能以及压缩数据，并没有将磁盘和内存里的page对齐，而是各有一套数据结构。
+
+- 内存里的数据页：in-memory page
+- 磁盘里的数据页：disk extent
+
+WiredTiger是同时支持行存储和列存储的，但是Mongo只用到了行存储，所以这里只要关注行存储的B+Tree索引页和数据页就可以。
+
+
+
+
+
+
+
+## WiredTiger引擎磁盘页面
+
 
 
 
