@@ -12,7 +12,9 @@ tags:
 
 ---
 
-## 为什么Mongo用WiredTiger？
+
+
+## 为什么Mongo放弃MMAPV1而使用WiredTiger？
 
 答案是**MMAP这条路走不下去了。**
 
@@ -30,13 +32,13 @@ tags:
 2. MMAP是一种按需分页（demand paging）。也就是先映射好一段地址，当真正需要访问某页的时候才会去磁盘加载。这样会触发大量page fault（A page fault occurs when a process accesses a page that is mapped in the virtual address space, but not loaded in physical memory）。
 3. 面对批量小IO，4K对齐会成为瓶颈。比如read 1k的数据，有3k空间会被浪费。不仅仅浪费，还会造成大量空间碎片。
 
-实际上，随着硬件发展，内存多copy一次并不会特别影响性能，read()方式也并不是完全被MMAP吊打。
+实际上，随着硬件发展，内存多copy一次并不会特别影响性能，fileChannel的read()方式也并不是完全被MMAP吊打。
 
-两者二选一的话，用性能优化竞赛的经验来看，还是那句话：都写一遍。
+两者二选一的话，用性能优化的经验来看，还是那句话：都写一遍。
 
 以上这些都是日常开发需要的，但是我们的开发都是基于用户空间的。**从数据库的角度**，MMAP是非常差劲的选择，或者说，依赖OS是非常不明智的做法。
 
-本质原因是MMAP让我们无法掌控flush的时机，失去了数据在内存和磁盘移动的权利，这对数据库来说是非常致命的。数据库需要对数据足够的主动权，比如：
+本质原因是MMAP的潮汐刷盘特性让我们无法掌控flush的时机，失去了数据在内存和磁盘移动的权利，这对数据库来说是非常致命的。数据库需要对数据足够的主动权，比如：
 
 1. 按指定顺序刷脏页
 2. buffer置换策略
@@ -60,7 +62,7 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
 ------
 
-**业界一个非常著名的例子**就是MongoDB，MongoDB初版用了MMAP作为数据库内核的IO方式，用了相当多的精力去弥补MMAP带来的缺陷，最后还是放弃了MMAP，四处筹钱买下了WiredTiger，从此一飞冲天。
+**业界一个非常著名的例子**就是MongoDB，MongoDB初版用了MMAP作为数据库内核的IO方式，用了相当多的精力去弥补MMAP带来的缺陷，最后还是放弃了MMAP，四处筹钱买下了WiredTiger，从此一飞冲天。所以我们搜索Mongo相关的文章，一般都是15年之后的，其实09年mongo就出世了，但14年才更换wiredtiger。
 
 **另一个著名的例子**就是谷歌的LevelDB，后由Facebook收购，基于LevelDB研发了RocksDB，Facebook做的第一件事就是移除LevelDB的MMAP。
 
@@ -80,10 +82,10 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
 ## WiredTiger优势
 
-1. **无锁并行框架**：充分利用 CPU 并行计算的内存模型的无锁并行框架，使得 WT 引擎在多核 CPU 上的表现优于其他存储引擎。
-2. **磁盘优化算法**：WT 实现了一套基于 BLOCK/Extent 的友好的磁盘访问算法，使得 WT 在数据压缩和磁盘 I/O 访问上优势明显。
-3. **简化事务模型**：实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，摒弃了传统的事务锁隔离又同时能保证事务的 ACID。
-4. **高效缓存模型**：WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。
+1. **无锁并行框架**：WT的事务并发创建、事务并发执行、事务并发提交基本都是做了无锁优化的，所以整体效率非常优秀
+2. **磁盘优化算法**：WT的page和Innodb有很大的不同，内存页面和磁盘页面分开设计，避免了Innodb中并发访问page的各种X和S锁。
+3. **简化事务模型**：实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，redo+no-steal的做法避免了复杂的undo设计。
+4. **高效缓存模型**：WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。（此部分待补充）
 
 <img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_insert_aws.png" alt="Pretty Pictures" style="zoom: 80%;" />
 
@@ -92,11 +94,11 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 <br>
 
 ##  性能优化的几个维度
-
-1. 去锁化：lock free || wait free
-2. 去大量随机IO
-3. 拉满缓存性能：内存、L1、L2、L3 cache
-4. 数据压缩：去冗余、压缩算法
+引擎本质是一个优化器，把我们常用的操作优化到极致并封装好。如果单纯是为了实现功能，数据库宕机恢复甚至不需要redo log，force+no-steal即可实现。所以研究存储引擎，本质是要研究它的优化点。这里列举几个常用的性能优化角度。
+1. **去锁化**：lock free || wait free，lock free可以理解为去重量锁，wait free可以理解为无任何锁，某些特定场景可以依靠算法设计来实现。
+2. **去大量随机IO**：这点在LSM结构中深有体现。
+3. **拉满缓存性能**：内存、L1、L2、L3 cache，CPU缓存级别的优化是看情况随缘的，要注意的是尽量别拖累CPU缓存，比如并发对象要注意是否加@Contented注解避免缓存行伪共享等等。
+4. **数据压缩**：去冗余、压缩算法
 
 
 <br>
@@ -161,17 +163,17 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 1. **Undo-Only Logging**
 
    		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
-		
+	
    		这种做法有两个坏处：
-		
+	
    		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
-		
+	
    		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
 
 2. **Redo-Only Logging**
 
    		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
-		
+	
    		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
 
 3. **Redo-Undo Logging**
@@ -210,18 +212,12 @@ Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
 
 ## ARIES（题外话）
 
-	92年的老论文，被誉为数据库领域的成人礼，通篇79页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能可以说每个商用数据库必备的，但是内容实在过于复杂，这里不做过多解释。算法非常完善，很多大型关系型数据库的实现都是基于这篇论文。而WiredTiger选择放弃Undo，以No-Steal为代价，绕开了这块复杂的设计。
-	
-	这里说两点ARIES算法的细节：
+	92年的老论文，被誉为数据库领域的成人礼，通篇79页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能可以说每个商用数据库必备的，但是内容实在过于复杂，这里不做过多解释。算法非常完善，很多大型关系型数据库的实现都是基于这篇论文。
+而WiredTiger选择放弃Undo，以No-Steal为代价，绕开了这块复杂的设计。
 
-1. **WAL Protocol**
+	这里枚举一点ARIES算法的细节，来表示其设计的复杂程度：
 
-   由于ARIES整体是No-Force+Steal的设计，所以刷盘时机由BM（BufferManger）管理。BM只需要遵守WAL协议就行。
-
-   1. 协议内容一：对于某个Page，刷盘之前，必须保证对这个页面对应的所有undo log全部刷盘。
-   2. 协议内容二：事务提交之前，必须保证redo log全部刷盘。
-
-2. **Compensation Log Record**
+1.  **Compensation Log Record**
 
    ARIES的Log Record有三种，Redo/Undo/CLR，CLR是ARIES的关键之一。
 
@@ -232,6 +228,8 @@ Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
    比如事务只有一个-1和+1操作，那undo记录的就是与之相反+1和-1，如果undo在执行到+1的时候再次宕机，那么再次执行的时候则可以根据CLR得知已经+1过了，避免再次+1的情况。
 
    但是Mysql处理嵌套宕机并没有用CLR，而是单独为UndoLog设置了一个Segment，把undoLog当做真实的数据存储。
+   
+   所以undo log的设计本质是非常复杂的，既要考虑性能又要考虑嵌套宕机，WT采用redo+no-steal的方式绕开了这部分的设计，也是很明智的。
 
 <br>
 
@@ -421,13 +419,12 @@ wt_log_slot{
 
 并发写入过程如图：
 
-![image-20220811002908056](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220811002908056.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+![image.png](http://pfp.ps.netease.com/kmspvt/file/62fa364acd054863f12591ceDHGWxWLL01?sign=SKunxSS9alvq646CaxmD3m75Hm8=&expire=1661350802)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 
 这里还要提的一点是，对于大事务，也就是超过256KB的事务，直接写入磁盘，不需要走缓存。
 事务并发提交的过程，我们可以抽象成：**多个不定长的小数组并发写入一个大数组**的过程。
-
-一种直接的想法是加锁串行依次写入，但是WT采用的方案去用自旋的 join 操作，给每一个小数组分配写入位置，然后无锁并发写入。秀的一批嗷。
-
+一种直接的想法是加锁串行依次写入，但是WT采用的方案则更为巧妙，它首先以自旋的方式串行分配好各个小数组的写入位置，然后无锁并发写入。**串行分配+无锁并发写** 虽然只是个小技巧， 但在很多地方能发挥很大的作用，值得学习。
+其中分配位置的方法是__wt_log_slot_join()方法。
 join操作核心逻辑如下所示：
 
 ```c
@@ -482,13 +479,13 @@ WiredTiger是同时支持行存储和列存储的，但是Mongo只用到了行�
 
 #### row_array:
 
-row_array的长度是根据page从磁盘里读出来的行数确认的，每个单元就是一个kv，准确的说是磁盘里的kv cell对象、它的偏移位置以及编码方式。
+row_array的长度是根据page从磁盘里读出来的行数确认的，每个单元就是一个kv。
 
 #### row_insert_array:
 
 两个row_array的单元很可能是不连续的，比如图中存的4个都不是连续的。那么往k = 1和k = 10中插入一个kv对的话，必然不能往数组里插，所以他们的间隙用了跳表来处理。
 
-跳表简单来说就是数组和链表的中和，数组查询快，链表增删快，如果都想要，那就可以尝试跳表、红黑树这些均衡的数据结构。之所以这里不用红黑树，是因为红黑树实现复杂，设计到旋转、变色等操作，不方便无锁化，一般需要加锁，而跳表虽然算法的常数项比红黑树大一些，但是底层结构是依赖的链表，**可以无锁化**。
+跳表简单来说就是数组和链表的中和，数组查询快，链表增删快，如果都想要，那就可以尝试跳表、红黑树这些均衡的数据结构。之所以这里不用红黑树，是因为红黑树实现复杂，涉及到旋转、变色等操作，不方便无锁化，一般需要加锁，而跳表虽然算法的常数项比红黑树大一些，但是底层结构是依赖的链表，**可以无锁化**。
 
 #### row_update_array:
 
