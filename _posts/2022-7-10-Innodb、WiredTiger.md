@@ -68,6 +68,14 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
 > **The OS is not your friend.**
 
+抛开内存映射这一点以外，MMAPV1也是全方位被WiredTiger吊打。
+
+| 特点     | MMAPV1              | WiredTiger             |
+| -------- | ------------------- | ---------------------- |
+| 数据压缩 | 无                  | 有，且支持多种压缩方式 |
+| 锁       | db锁、collection锁  | document锁             |
+| 并发性能 | 多核CPU不能提高性能 | 多核系统表现更好       |
+
 
 
 ## WiredTiger优势
@@ -77,33 +85,28 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 3. **简化事务模型：**实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，摒弃了传统的事务锁隔离又同时能保证事务的 ACID。
 4. **高效缓存模型：**WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。
 
-<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_insert_aws.png" alt="Pretty Pictures" style="zoom: 33%;" />
+<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_insert_aws.png" alt="Pretty Pictures" style="zoom: 80%;" />
 
-<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_query_aws.png" alt="Pretty Pictures" style="zoom: 33%;" />
+<img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_query_aws.png" alt="Pretty Pictures" style="zoom: 80%;" />
 
 
 
 ## 性能优化的几个维度
 
 1. 去重量锁，轻量化，最好无锁化
-2. 去随机IO
+2. 去多次随机IO
 3. 缓存性能拉满，不局限于内存，包括CPU Cache
 4. 数据压缩
 
-## WiredTiger引擎存储结构
 
-#### B+Tree的优点：
 
-1. 优化IO次数，三层的B+Tree能支持存储千万级别的数据
-2. 方便范围查询
+## WiredTiger引擎存储结构对比（LSM  vs B+Tree）
 
-#### B+Tree的缺点：
+#### 写入吞吐量：
 
-1. 随机写入性能差
+LSM的写入吞吐量是B+Bree的1.5到2倍
 
-#### LSM
 
-// todo 待补充
 
 #### 总结：
 
@@ -142,63 +145,88 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 
    
 
-   ## WiredTiger事务前置知识-WAL
 
-   **行为：**先写日志，后刷盘。
+## WiredTiger事务前置知识-WAL
 
-   **目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
+**行为：**先写日志，后刷盘。
 
-   **分类：**根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
+**目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
 
-   1. **Undo-Only Logging**
+**分类：**根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
 
-      ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
+1. **Undo-Only Logging**
 
-      ​		这种做法有两个坏处：
+   ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
 
-      ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
+   ​		这种做法有两个坏处：
 
-      ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
+   ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
 
-   2. **Redo-Only Logging**
+   ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
 
-      ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
+2. **Redo-Only Logging**
 
-      ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
+   ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
 
-   3. **Redo-Undo Logging**
+   ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
 
-      ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
+3. **Redo-Undo Logging**
 
-      ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
+   ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
 
-      ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
+   ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
 
-      ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
+   ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
 
-   #### 总结：
+   ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
 
-   Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补。
+#### 总结：
 
-   业界把Commit时是否要强制刷盘统称为Force、No-Force，把Commit前能否提前刷盘称为No-Steal、Steal。
-   
-   Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
-   
-   所以排列组合有四种保证数据库宕机恢复的方式：**
-   
-   1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
-   2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
-   3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
-   4. Force + No-Steal，意味着只能在commit时全量刷盘
-   
-   **Wiredtiger属于Redo + No-Steal类型，所以WT没有undo log。**
-   
-   **Innodb属于Redo + Undo类型。**
-   
-<<<<<<< HEAD
-=======
+Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补。
 
->>>>>>> 8520d2d6426907504884f1f73470a2c9c573d45a
+业界把Commit时是否要强制刷盘统称为Force、No-Force，把Commit前能否提前刷盘称为No-Steal、Steal。
+
+Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
+
+所以排列组合有四种保证数据库宕机恢复的方式：**
+
+1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
+2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
+3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
+4. Force + No-Steal，意味着只能在commit时全量刷盘
+
+**Wiredtiger属于Redo + No-Steal类型，所以WT没有undo log。**
+
+**Innodb属于Redo + Undo类型。**
+
+
+
+## ARIES（题外话）
+
+​	92年的老论文，被誉为数据库领域的成人礼，通篇79页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能可以说每个商用数据库必备的，但是内容实在过于复杂，这里不做过多解释。算法非常完善，很多大型关系型数据库的实现都是基于这篇论文。而WiredTiger选择放弃Undo，以No-Steal为代价，绕开了这块复杂的设计。
+
+​	这里说两点ARIES算法的细节：
+
+1. **WAL Protocol**
+
+   由于ARIES整体是No-Force+Steal的设计，所以刷盘时机由BM（BufferManger）管理。BM只需要遵守WAL协议就行。
+
+   1. 协议内容一：对于某个Page，刷盘之前，必须保证对这个页面对应的所有undo log全部刷盘。
+   2. 协议内容二：事务提交之前，必须保证redo log全部刷盘。
+
+2. **Compensation Log Record**
+
+   ARIES的Log Record有三种，Redo/Undo/CLR，CLR是ARIES的关键之一。
+
+   当rollback使用Undo Log的时候，每执行一条Undo恢复操作，就要记录一条CLR记录。这是因为undo只是逻辑日志，并不指定要修改哪个页面，而CLR是物理日志，相当于是undo翻译后的结果，也可以看做是undo过程的redo日志。
+
+   这么做的原因是，宕机恢复的过程中，依然可能产生嵌套宕机的情况，而undo由于是逻辑日志，无法保证幂等性，所以需要CLR来保证幂等性。
+
+   比如事务只有一个-1和+1操作，那undo记录的就是与之相反+1和-1，如果undo在执行到+1的时候再次宕机，那么再次执行的时候则可以根据CLR得知已经+1过了，避免再次+1的情况。
+
+   但是Mysql处理嵌套宕机并没有用CLR，而是单独为UndoLog设置了一个Segment，把undoLog当做真实的数据存储。
+
+
 
 ## WiredTiger引擎事务实现
 
@@ -208,7 +236,7 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 2. MVCC
 3. redo log
 
-#### 单个事务对象
+#### 事务对象
 
 ```c
 wt_transaction{
@@ -235,7 +263,11 @@ struct __wt_txn_global {
 
 **这里第一个无锁化的点**就在于创建snapshot时的scan_count。
 
+有scan_count就说明有其他请求在创建SnapShot。
+
 开启事务的时候，事务ID是默认的`WT_TNX_NONE(= 0)`。当第一次执行写操作的时候，全局事务管理器给它分配一个唯一id。
+
+所以只要是transaction_id不为0的事务，都可以认为是有修改操作的事务。
 
 创建一个snapshot的流程：
 
@@ -345,7 +377,7 @@ logop有多个类型：
 
 LogRocrd总结结构如图所示：
 
-<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220810222834765.png" alt="image-20220810222834765" style="zoom: 80%;" /> 
+<img src="https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220810222834765.png" alt="image-20220810222834765"  /> 
 
 #### 事务提交时的并发写优化
 
@@ -386,16 +418,6 @@ wt_log_slot{
 
 这里还要提的一点是，对于大事务，也就是超过256KB的事务，直接写入磁盘，不需要走缓存。
 
-#### 日志和checkpoint的关系
-
-
-
-
-
-
-
-
-
 
 
 ## WiredTiger引擎内存页面
@@ -412,9 +434,23 @@ WiredTiger为了获得更好的并发性能以及压缩数据，并没有将磁�
 
 WiredTiger是同时支持行存储和列存储的，但是Mongo只用到了行存储，所以这里只要关注行存储的B+Tree索引页和数据页就可以。
 
+内存中一个page的存储结构如图所示：
 
+![image-20220814204907528](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220814204907528.png)
 
+#### row_array:
 
+row_array的长度是根据page从磁盘里读出来的行数确认的，每个单元就是一个kv，准确的说是磁盘里的kv cell对象、它的偏移位置以及编码方式。
+
+### row_insert_array:
+
+两个row_array的单元很可能是不连续的，比如图中存的4个都不是连续的。那么往k = 1和k = 10中插入一个kv对的话，必然不能往数组里插，所以他们的间隙用了跳表来处理。
+
+跳表简单来说就是数组和链表的中和，数组查询快，链表增删快，如果都想要，那就可以尝试跳表、红黑树这些均衡的数据结构。之所以这里不用红黑树，是因为红黑树实现复杂，设计到旋转、变色等操作，不方便无锁化，一般需要加锁，而跳表虽然算法的常数项比红黑树大一些，但是底层结构是依赖的链表，**可以无锁化**。
+
+#### row_update_array:
+
+查询和更新操作自然对应的就是数组了，这里的数组上文介绍mvcc已经说过，每个单元都是一行数据的历史改动链。
 
 
 
@@ -422,146 +458,106 @@ WiredTiger是同时支持行存储和列存储的，但是Mongo只用到了行�
 
 
 
+![image-20220814222257568](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220814222257568.png)
 
+#### Disk  Extent 结构
 
+- page header：记录当前数据页的状态信息
+- block header： extent 存储的头信息，主要存有数据的 chucksum 和长度等。
+- extent data：存储的数据，是一个 cell 数据集合（cell为kv对的序列化之后的数据块）
 
+#### Extent address
 
+Extent address全都存储在一个作为索引的特殊extent里面，它有如下构造：
 
+- offset：extent在b+树文件中的偏移量
+- size：extent的长度
+- chunksum：判断合法性
 
+#### Page从磁盘中读取的过程（in-memory）
 
+1. 根据b+树索引上的extent address，从对应文件中读这个extent到内存缓冲区。
+2. 检验checksum
+3. 判断是否开启压缩，如果开启则解压
+4. 构建内存中的page对象
+5. 遍历整个extent里的cell，构建row_array、row_insert_array、row_update_array
 
+#### Page从内存中写到磁盘的过程（reconcile）（reconcile和split需要排它锁）
 
+1. 扫描所有row_array、row_insert_array、row_update_array，生成cell对象，依次放到rec buffer中，其中超大的cell会特殊处理。
 
+2. 判断这个缓冲区是否超过了page_max_size，如果超过了要split。page_max_size可以自行设置。
 
+3. 判断是否开启压缩，如果是则压缩rec_buffer为data_buffer
 
+4. 根据b+树文件的状态生成一个extent对象，用压缩后的data_buffer填充这个对象
 
-
-### 物理日志、逻辑日志定义
-
-##### 物理日志
-
-举例：**Page 42:image at 367,2; before:'ab';after:'cd'**  
-
-作用：把42号page的367、368字节从ab变成cd
-
-特点：幂等
-
-##### 逻辑日志
-
-比物理日志更高层的抽象，可以看做是Sql语句。
-
-一个逻辑日志可以对应多个物理日志。但多个物理日志不一定能对应一个逻辑日志。
-
-特点：数据量小，所以适合IO吞吐量、网络带宽要求高的地方，所以用于同步binLog必然是逻辑日志。
-
-
-
-### Innodb的RedoLog为什么用物理日志更合适？
-
-1. **幂等性：**因为我们无法得知在事务执行期间，哪些page刷盘了。**所以redo重放必须是可重复的，也就是要保证幂等性。**
-2. **并发重放：**物理日志的执行单位是page，**所以在重放的时候可以并发重放**，简单理解就是page和page之间是并行的，一个page内的执行操作是串行的。而逻辑日志由于一条日志可能对应多个page，所以无法并发，只能整体串行。
-
-### Innodb的RedoLog是纯物理日志吗？（待补充）
-
-当然不是。物理日志的优势在于幂等和页并发。但是页内的日志重发是串行的。16k的页极限情况下可能的日志量能上万，这样串行效率就非常低了。
-
-### Innodb的UndoLog为什么用逻辑日志更合适？
-
-1. 物理日志量会更大，所以redo log设计成了循环写，否则会占用大量空间。
-2. 
-
-
-
-
-
-
-
-文本解释了：**为什么innodb的undolog需要持久化？**
-
-原因：**不考虑mvcc，innodb通过redolog和undolog的持久化保证了数据库的“高性能”宕机恢复能力，从而把事务数据的持久化操作分离，从最朴素的“同步的单次大量随机写” 优化到了 “异步的多次小量随机写 + 部分连续page顺序写”。**
-
-
-
-## 数据库故障恢复需要保证：
-
-1. Durability of Updates，持久性：已提交事务的修改，恢复后依然存在
-2. Failure Atomic，原子性：未提交事务的的修改，恢复后不存在
-
-## 最朴素的做法
-
-Commit时强制刷脏页，会产生大量随机写操作，性能很差。但是也能保证。
-
-## WAL
-
-**行为：**先写日志，后刷盘。
-
-**目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
-
-**分类：**Log中还需要记录Commit的标记，判断事务的状态，所以根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
-
-1. **Undo-Only Logging**
-
-   ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
-
-   ​		这种做法有两个坏处：
-
-   ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
-
-   ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
-
-2. **Redo-Only Logging**
-
-   ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
-
-   ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
-
-3. **Redo-Undo Logging**
-
-   ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
-
-   ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
-
-   ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
-
-   ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
-
-   ​		总结一下，Undo和Redo分别有一种缺陷，需要用严格的刷盘顺序来弥补，业界关于Commit时是否要强制刷盘统称为Force、No-Force，关于Commit前能否提前刷盘称为No-Steal、Steal。**Force保证了持久性，No-Steal保证了原子性。**
-
-   ​	**所以排列组合有四种保证数据库宕机恢复的方式：**
-
-   1. Redo(No-Force) + No-Steal，意味着commit时**不强制**全量刷盘，之前不可以刷盘，之后可以随便刷
-   2. Undo(Steal) + Force, 意味着commit时**强制**全量刷盘，之前可以随便刷
-   3. Redo(No-Force) + Undo(Steal)，意味着刷盘操作完全不受commit影响，可以在任意时机刷盘
-   4. Force + No-Steal，意味着只能在commit时全量刷盘
+5. 写入b+树文件，返回extent address更新内存里b+树的索引
 
    
 
-   ## ARIES
+## WiredTiger的常用配置
 
-   ​	92年的老论文，被誉为数据库领域的成人礼，通篇69页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能，可以说每个商用数据库必备的。
+- **memory_page_max**
 
-   ​	ARIES算法的关键：
+  内存里的page最大值，一个page不断被插入和修改会接近这个值，默认为5MB。
 
-   1. **WAL Protocol**
+  当一个内存page达到这个值会触发split和reconcile，需要注意这两个操作是必须要排它锁的，会影响性能。
 
-      由于ARIES整体是No-Force+Steal的设计，所以刷盘时机由BM（BufferManger）管理。BM只需要遵守WAL协议就行。
+  如果这个值太小，会容易加锁，如果太大，不容易触发锁，但是一旦触发时间会比较长。所以需要根据实际情况合理判断。
 
-      1. 协议内容一：对于某个Page，刷盘之前，必须保证对这个页面对应的所有undo log全部刷盘。
-      2. 协议内容二：事务提交之前，必须保证redo log全部刷盘。
+- **leaf_page_max**
 
-   2. **Compensation Log Record**
+  磁盘里的叶子page最大值，默认为32KB, 如果超过这个大小会自动拆分。
 
-      ARIES的Log Record有三种，Redo/Undo/CLR，CLR是ARIES的关键之一。
+  这个值太小会影响IO性能，JAVA里BufferReader默认一次是8KB，设置为4K理论上是最小的了。
 
-      当rollback使用Undo Log的时候，每执行一条Undo恢复操作，就要记录一条CLR记录。这是因为undo只是逻辑日志，并不指定要修改哪个页面，而CLR是物理日志，相当于是undo翻译后的结果，也可以看做是undo过程的redo日志。
+  这个值太大也会造成读写放大，因为读出来的数据很多都可能用不上。
 
-      这么做的原因是，宕机恢复的过程中，依然可能产生嵌套宕机的情况，而undo由于是逻辑日志，无法保证幂等性，所以需要CLR来保证幂等性。
+  一些常用的经验有：
 
-      比如事务只有一个-1和+1操作，那undo记录的就是与之相反+1和-1，如果undo在执行到+1的时候再次宕机，那么再次执行的时候则可以根据CLR得知已经+1过了，避免再次+1的情况。
+  - 如果是随机读很多的场景，可以把叶子设置稍微小一点。
+  - 如果是顺序读很多的场景，可以把叶子设置稍微大一点。
 
-      
+- #### leaf_value_max && leaf_key_max 
 
-   ​	
+  这两个kv最大值和leaf_page_max没有关系，如果k或者v超过leaf_page_max，那么WT会忽视leaf_page_max，创建一个更大的页面。
+
+  但如果超过了这个值，会被认为是overflow item，需要额外IO去处理，影响性能。
+
+  叶子节点里的最大value上限，最大为4G，也是理论上Mongo的单个document上限。但是Mongo出于和存储引擎的适配以及网络IO等角度考虑，至今document上限仍然是16M。
+
+  
+
+
+
+## 总结
+
+WiredTiger作为一款救了MongoDB命的存储引擎，很多地方还是值得研究的。
+
+一直都知道mongo吃内存，但是一直不知道其中原因，其实本质还是为了并发付出的代价。
+
+比如in-memory page的设计，再比如reconcile的过程，需要多次拷贝，所以为了发挥WT的性能，大一点物理内存是很必要的。
+
+它的数据结构使用的也相当灵活，除了redis又一次见到了使用跳表的场景，加深了我对这些数据结构的理解。
+
+同时它的并发设计也非常有意思，比如并发创建事务、并发执行事务、并发提交事务、无锁化访问页等等，一些很小的trick却能带来很强的优化。日后遇到并发写的场景时相信会有很大的帮助。
+
+由于本人精力有限，其中Ticket限流算法、HazardPointer页面释放算法这里没有写进来，后续会补上。
+
+
+
+
+
+
+
+
+
+
+
+
+
+​	
 
 
 
