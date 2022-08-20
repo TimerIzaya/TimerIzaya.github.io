@@ -1,17 +1,3 @@
----
-layout:     post
-title:      WiredTiger引擎解析
-subtitle:   重新认识数据库
-date:       2022-8-1
-author:     Timer
-header-img: img/the-first.png
-catalog: false
-tags:
-    - 数据库
- 
-
----
-
 ## 为什么Mongo用WiredTiger？
 
 答案是**MMAP这条路走不下去了。**
@@ -76,45 +62,48 @@ PageTable有一些额外的元信息，最重要的是Dirty Flag和Pin Counter�
 | 锁       | db锁、collection锁  | document锁             |
 | 并发性能 | 多核CPU不能提高性能 | 多核系统表现更好       |
 
-
+<br>
 
 ## WiredTiger优势
 
-1. **无锁并行框架：**充分利用 CPU 并行计算的内存模型的无锁并行框架，使得 WT 引擎在多核 CPU 上的表现优于其他存储引擎。
-2. **磁盘优化算法：**WT 实现了一套基于 BLOCK/Extent 的友好的磁盘访问算法，使得 WT 在数据压缩和磁盘 I/O 访问上优势明显。
-3. **简化事务模型：**实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，摒弃了传统的事务锁隔离又同时能保证事务的 ACID。
-4. **高效缓存模型：**WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。
+1. **无锁并行框架**：充分利用 CPU 并行计算的内存模型的无锁并行框架，使得 WT 引擎在多核 CPU 上的表现优于其他存储引擎。
+2. **磁盘优化算法**：WT 实现了一套基于 BLOCK/Extent 的友好的磁盘访问算法，使得 WT 在数据压缩和磁盘 I/O 访问上优势明显。
+3. **简化事务模型**：实现了基于 snapshot 技术的 ACID 事务，snapshot 技术大大简化了 WT 的事务模型，摒弃了传统的事务锁隔离又同时能保证事务的 ACID。
+4. **高效缓存模型**：WT 根据现代内存容量特性实现了一种基于 Hazard Pointer 的 LRU cache 模型，充分利用了内存容量的同时又能拥有很高的事务读写并发。
 
 <img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_insert_aws.png" alt="Pretty Pictures" style="zoom: 80%;" />
 
 <img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/iiBench_query_aws.png" alt="Pretty Pictures" style="zoom: 80%;" />
 
+<br>
+
+##  性能优化的几个维度
+
+1. 去锁化：lock free || wait free
+2. 去大量随机IO
+3. 拉满缓存性能：内存、L1、L2、L3 cache
+4. 数据压缩：去冗余、压缩算法
 
 
-## 性能优化的几个维度
-
-1. 去重量锁，轻量化，最好无锁化
-2. 去多次随机IO
-3. 缓存性能拉满，不局限于内存，包括CPU Cache
-4. 数据压缩
-
-
+<br>
 
 ## WiredTiger引擎存储结构对比（LSM  vs B+Tree）
 
-#### 写入吞吐量：
-
-LSM的写入吞吐量是B+Bree的1.5到2倍
-
-
-
-#### 总结：
-
 <img src="https://github.com/wiredtiger/wiredtiger/wiki/attachments/LSM_btree_Throughput.png" alt="漂亮的图片" style="zoom: 33%;" /> 
 
-1. 如果有大量的写操作的需求，则LSM是一种替换BTREE 更好的选择
-2. Btree 的数据存储结构方式在大部分情况中是可以满足,写入和查询的需求的
-3. 如果数据库中的collections 的需求比较复杂,则可以在一个DATABASE中选择适合的 lsm 和 btree 混合的模式
+在24C 144G内存的前提下
+
+**写吞吐量**：LSM是B+Tree的1.5到2倍
+
+**读吞吐量**：B+Tree是LSM的1.5到3倍
+
+1.如果需要极高的写入吞吐量，而对查询没有性能要求的话，LSM是最佳选择
+
+2.大部分场景下，对读写都有要求，那么B+Tree是最好的选择
+
+3.复杂需求场景可以考虑在一个数据库内同时建立这两种存储结构的collection
+
+#### 
 
 #### LSM的使用
 
@@ -145,40 +134,44 @@ LSM的写入吞吐量是B+Bree的1.5到2倍
 
    
 
+<br>
 
 ## WiredTiger事务前置知识-WAL
 
-**行为：**先写日志，后刷盘。
+**行为**：先写日志，后刷盘。
 
-**目的：**刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
+**目的**：刷脏页是随机写，而写日志是顺序写，节省IO消耗，提升性能。
 
-**分类：**根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
+**分类**：根据Commit的标记时机和数据落盘时机顺序不同，WAL日志分为以下三类：
 
 1. **Undo-Only Logging**
 
-   ​		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
-
-   ​		这种做法有两个坏处：
-
-   ​		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
-
-   ​		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
+   		Log记录可以表现为<T,X,V>，事务T修改了X的旧值V。这种WAL通过undo保证了原子性，却不能保证持久性。所以必须先刷盘再commit，落盘顺序为：Log -> Data -> Commit。
+		
+   		这种做法有两个坏处：
+		
+   		1.Page并发问题，如果两个事务同时修改了一个Page，一个事务提交需要Flush，会导致另一个事务的数据也被迫落盘，破坏了WAL的原则。
+		
+   		2.同步持久化Data导致频繁的随机写，影响性能。违背WAL通过顺序写优化性能的初衷。
 
 2. **Redo-Only Logging**
 
-   ​		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
-
-   ​		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
+   		Log记录可以表现为<T,X,V>，事务T修改了X的新值V。这种WAL通过redo保证了持久性，却不能保证原子性。所以必须先commit再刷盘，落盘顺序为：Log -> Commit -> Data。
+		
+   		这种WAL依然不能解决Page并发的问题。如果两个事务同时修改了一个Page，只要有一个没提交，另一个就不能刷盘，这些数据全都放在内存中，限制很大。
 
 3. **Redo-Undo Logging**
 
-   ​		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
+   		Undo记录旧值保证了原子性，但必须通过Commit前刷盘保证持久性。
+   	
+   		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
+   	
+   		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
+   	
+   		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
 
-   ​		Redo记录新值保证了持久性，但必须通过Commit后刷盘保证原子性。
 
-   ​		现在将Undo和Redo结合，就可以消除刷盘时机的限制，所以也解决了Page并发的问题。
-
-   ​		因为只靠WAL就可以保证数据库故障恢复，刷盘操作就可以单独分开处理，更可以把地址连续的page攒着进行批量的顺序刷盘，进一步优化性能。
+<br>
 
 #### 总结：
 
@@ -199,13 +192,13 @@ Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
 
 **Innodb属于Redo + Undo类型。**
 
-
+<br>
 
 ## ARIES（题外话）
 
-​	92年的老论文，被誉为数据库领域的成人礼，通篇79页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能可以说每个商用数据库必备的，但是内容实在过于复杂，这里不做过多解释。算法非常完善，很多大型关系型数据库的实现都是基于这篇论文。而WiredTiger选择放弃Undo，以No-Steal为代价，绕开了这块复杂的设计。
-
-​	这里说两点ARIES算法的细节：
+	92年的老论文，被誉为数据库领域的成人礼，通篇79页，提供了一个经典的No-Force+Steal的WAL实现，No-Force+Steal的高性能可以说每个商用数据库必备的，但是内容实在过于复杂，这里不做过多解释。算法非常完善，很多大型关系型数据库的实现都是基于这篇论文。而WiredTiger选择放弃Undo，以No-Steal为代价，绕开了这块复杂的设计。
+	
+	这里说两点ARIES算法的细节：
 
 1. **WAL Protocol**
 
@@ -226,7 +219,7 @@ Force或者redo保证了持久性，No-Steal或者undo保证了原子性。
 
    但是Mysql处理嵌套宕机并没有用CLR，而是单独为UndoLog设置了一个Segment，把undoLog当做真实的数据存储。
 
-
+<br>
 
 ## WiredTiger引擎事务实现
 
@@ -346,7 +339,7 @@ struct __wt_update {
 2. WT使用SnapShot-Isolation，本质是因为处理并发写的时候，如果不抛异常，就要做行锁、间隙锁等等重量锁去处理，这种隔离方式也是一种并发优化。
 
 
-
+<br>
 ## WiredTiger引擎日志实现
 
 由事务的分析可以知道，WiredTiger在事务过程中的修改都是发生在MVCC List上的，属于内存操作。
@@ -417,8 +410,43 @@ wt_log_slot{
 ![image-20220811002908056](https://raw.githubusercontent.com/TimerIzaya/TimerBlogPic/master/image-20220811002908056.png)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
 这里还要提的一点是，对于大事务，也就是超过256KB的事务，直接写入磁盘，不需要走缓存。
+事务并发提交的过程，我们可以抽象成：**多个不定长的小数组并发写入一个大数组**的过程。
 
+一种直接的想法是加锁串行依次写入，但是WT采用的方案去用自旋的 join 操作，给每一个小数组分配写入位置，然后无锁并发写入。秀的一批嗷。
 
+join操作核心逻辑如下所示：
+
+```c
+void __wt_log_slot_join(WT_SESSION_IMPL *session, uint64_t mysize, uint32_t flags, WT_MYSLOT *myslot)
+{
+    wait_cnt = 0; // 自旋次数
+    for (;;) {
+        WT_BARRIER();
+        slot = log->active_slot; // 获得分配的slot
+        old_state = slot->slot_state; // 获得slot状态
+        if (WT_LOG_SLOT_OPEN(old_state)) { // slot可用就分配，不可用就自旋
+            join_offset = WT_LOG_SLOT_JOINED(old_state);
+            if (unbuffered) // 大事务，标记为unbuffered，表示不走缓存直接写入
+                new_join = join_offset + WT_LOG_SLOT_UNBUFFERED;
+            else // 小事务，在slot当前偏移量加上事务长度，获得写入位置
+                new_join = join_offset + (int32_t)mysize;
+            new_state = (int64_t)WT_LOG_SLOT_JOIN_REL( 
+              (int64_t)new_join, (int64_t)released, (int64_t)flag_state);
+			
+            // cas标记new_state，比如上图T1走到这步new_state由ready变为done
+            if (__wt_atomic_casiv64(&slot->slot_state, old_state, new_state))
+                break;
+        } else {
+            ++wait_cnt;
+        }
+    }
+    myslot->offset = join_offset; // 更新offset
+}
+```
+
+#### 
+
+<br>
 
 ## WiredTiger引擎内存页面
 
@@ -442,7 +470,7 @@ WiredTiger是同时支持行存储和列存储的，但是Mongo只用到了行�
 
 row_array的长度是根据page从磁盘里读出来的行数确认的，每个单元就是一个kv，准确的说是磁盘里的kv cell对象、它的偏移位置以及编码方式。
 
-### row_insert_array:
+#### row_insert_array:
 
 两个row_array的单元很可能是不连续的，比如图中存的4个都不是连续的。那么往k = 1和k = 10中插入一个kv对的话，必然不能往数组里插，所以他们的间隙用了跳表来处理。
 
@@ -452,7 +480,7 @@ row_array的长度是根据page从磁盘里读出来的行数确认的，每个�
 
 查询和更新操作自然对应的就是数组了，这里的数组上文介绍mvcc已经说过，每个单元都是一行数据的历史改动链。
 
-
+<br>
 
 ## WiredTiger引擎磁盘页面
 
@@ -494,7 +522,7 @@ Extent address全都存储在一个作为索引的特殊extent里面，它有如
 
 5. 写入b+树文件，返回extent address更新内存里b+树的索引
 
-   
+   <br>
 
 ## WiredTiger的常用配置
 
@@ -529,6 +557,7 @@ Extent address全都存储在一个作为索引的特殊extent里面，它有如
 
   
 
+<br>
 
 
 ## 总结
@@ -544,80 +573,3 @@ WiredTiger作为一款救了MongoDB命的存储引擎，很多地方还是值得
 同时它的并发设计也非常有意思，比如并发创建事务、并发执行事务、并发提交事务、无锁化访问页等等，一些很小的trick却能带来很强的优化。日后遇到并发写的场景时相信会有很大的帮助。
 
 由于本人精力有限，其中Ticket限流算法、HazardPointer页面释放算法这里没有写进来，后续会补上。
-
-
-
-
-
-
-
-
-
-
-
-
-
-​	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
