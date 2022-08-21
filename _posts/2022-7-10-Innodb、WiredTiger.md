@@ -1,3 +1,17 @@
+---
+layout:     post
+title:      WiredTiger存储与并发原理解析
+subtitle:   
+date:       2022-5-11
+author:     Timer
+header-img: img/the-first.png
+catalog: false
+tags:
+    - 数据库
+ 
+
+---
+
 ## 为什么Mongo用WiredTiger？
 
 答案是**MMAP这条路走不下去了。**
