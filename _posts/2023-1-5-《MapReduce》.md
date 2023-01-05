@@ -1,7 +1,7 @@
 ---
 layout:     post
-title:      MapReduce论文翻译
-subtitle:   
+title:      MapReduce - Simplified Data Processing on Large Clusters 
+subtitle:   个人翻译
 date:       2023-1-5
 author:     Timer
 header-img: img/the-first.png
