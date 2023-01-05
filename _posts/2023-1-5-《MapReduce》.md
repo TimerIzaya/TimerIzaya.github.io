@@ -1,13 +1,13 @@
 ---
 layout:     post
-title:      MapReduce: Simplified Data Processing on Large Clusters
-subtitle:   个人翻译
+title:      MapReduce论文翻译
+subtitle:   
 date:       2023-1-5
 author:     Timer
 header-img: img/the-first.png
 catalog: false
 tags:
-    - 架构 
+    - 分布式 
 
 ---
 
