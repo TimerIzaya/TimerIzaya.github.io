@@ -8,6 +8,7 @@ header-img: img/the-first.png
 catalog: false
 tags:
     - Linux
+    - Note
 
 ---
 
