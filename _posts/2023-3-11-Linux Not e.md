@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      Linux Note
-subtitle:   所有Linux相关的知识
+subtitle:   
 date:       2023-3-11
 author:     Timer
 header-img: img/the-first.png
