@@ -6,7 +6,7 @@ email: 949309011@qq.com
 description: "Stay Hungry, Stay foolish"
 keyword: ""
 url: "https://timerizaya.github.io/"          # your host, for absolute URL
-baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
+baseurl: ""      # aafor example, '/blog' if your blog hosted on 'host/blog'
 github_repo: "git@github.com:TimerIzaya/TimerIzaya.github.io.git" # you code repository
 
 # Sidebar settings
