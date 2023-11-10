@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      Myers VS DP
+title:      差分算法分析：Myers vs DP
 subtitle:   
-date:       2023-11-7
+date:       2023-11-8
 author:     TimerIzaya
 header-img: img/the-first.png
 catalog: false
