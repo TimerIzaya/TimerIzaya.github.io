@@ -1,0 +1,11 @@
+{
+  "errcode" : 500,
+  "errmsg" : "Required request body is missing: public com.netease.ncc.open.developer.api.common.util.OpenResponse<?> com.netease.ncc.open.developer.api.core.controller.robot.ConsumeRobotController.sendMsg(java.lang.String,com.netease.ncc.open.developer.api.core.dto.robot.ConsumeRobotSendMsgForm,javax.servlet.http.HttpServletRequest)",
+  "traceId" : "81bab037892576cd"
+}--_curl_--
+>       "message": "test"
+--_curl_--
+>       "timestamp": "1709190613400"
+--_curl_--
+>       "signData": "vSAlGS/OhyFmmadKT6PDf5pvCZ8PbbW5iKYC/GMzpoM="
+>     
