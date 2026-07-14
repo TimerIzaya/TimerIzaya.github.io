@@ -67,7 +67,7 @@ main { padding-top: var(--nav-height); }
 .text-link { color: var(--blue); font-size: 18px; }.text-link:hover { text-decoration: underline; }
 .text-link span { font-size: 25px; line-height: 0; vertical-align: -1px; }
 .hero-media { width: min(1060px, 96vw); margin-top: -8px; }
-.hero-media img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
+.hero-media img { display: block; width: 100%; height: auto; }
 
 .product-panel { min-height: 740px; padding: 76px 20px 0; }
 .panel-copy { position: relative; z-index: 2; }
