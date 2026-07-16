@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="mori 是一款帮助你快速记录与温柔回顾的轻量笔记工具。本页面为脱敏前端能力展示。">
+  <title>mori · 沐里笔记</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="mori 首页"><span class="brand-leaf"></span><span>mori</span></a>
+      <nav class="desktop-nav" aria-label="主导航">
+        <a href="#guide">mori 101</a><a href="#sync">下载</a><a href="#workflow">会员</a><a href="#footer">联系我们</a><i></i><button class="nav-login" data-dialog="登录">登录</button><button class="register small" data-dialog="免费注册">免费注册</button>
+      </nav>
+      <div class="mobile-actions"><button class="register small" data-dialog="免费注册">免费注册</button><button class="menu-toggle" id="menuToggle" aria-label="打开菜单" aria-expanded="false"><span></span><span></span><span></span></button></div>
+      <nav class="mobile-menu" id="mobileMenu"><button data-dialog="登录">登录</button><a href="#guide">mori 101</a><a href="#sync">下载</a><a href="#workflow">会员</a><a href="#footer">联系我们</a></nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero page-shell reveal">
+      <h1>持续不断记录，<span>答案自然浮现</span></h1>
+      <p class="hero-desc desktop-only">mori 沐里笔记，不仅帮你快速收集灵感，也让每一次回看更有价值</p>
+      <p class="hero-desc mobile-only">快速收下灵感，轻松回看笔记。<br>从一张小卡片开始，让想法慢慢汇成河流。</p>
+      <button class="register hero-button" data-dialog="免费注册">免费注册</button>
+      <button class="text-link login-link" data-dialog="登录">已经有账号？点此登录</button>
+
+      <div class="hero-product" aria-label="mori 多端产品界面原创示意图">
+        <div class="platform-pills"><span>微信速记</span><b>›</b><span>手机端</span><b>›</b><span>桌面端</span><b>›</b><span>浏览器</span><b>›</b><span>更多方式</span></div>
+        <div class="device desktop-device">
+          <div class="device-camera"></div><div class="screen">
+            <aside class="app-sidebar"><span class="mini-brand"><i></i>mori</span><button>＋ 新建笔记</button><em>全部笔记</em><em># 灵感</em><em># 阅读</em><em># 工作记录</em><em>稍后整理</em></aside>
+            <div class="memo-feed"><div class="feed-head"><strong>今天的想法</strong><span>⌕</span></div><article><small>09:24</small><p>整理不是把内容放进盒子，而是让下一次相遇变得更容易。</p><div class="chips"><span>#思考</span><span>#方法</span></div></article><article><small>昨天 21:16</small><p>走得慢一点，才能发现那些一直在身边的小事。</p><div class="chips"><span>#日常</span></div></article></div>
+          </div>
+        </div>
+        <div class="device phone-device"><div class="notch"></div><div class="phone-screen"><div class="status">9:41 <span>● ◔ ▮</span></div><div class="chat-title">灵感助手</div><div class="chat-msg">今天想到一个新点子：把每周复盘改成三个问题。</div><div class="chat-msg me">已为你保存 ✓</div><div class="chat-input">输入一条想法… <b>＋</b></div></div></div>
+        <div class="device tablet-device"><div class="camera-dot"></div><div class="tablet-screen"><div class="tab-top"><b>mori</b><span>全部笔记　⌕</span></div><div class="tab-grid"><article><small>刚刚</small><p>今天读到一句话，让我重新理解了“耐心”。</p><span>#阅读</span></article><article><small>星期二</small><div class="blur-photo mosaic"></div><p>窗边的光刚刚好。</p></article><article><small>星期一</small><p>项目下一步：先验证最小闭环，再补充细节。</p><span>#工作</span></article></div></div></div>
+      </div>
+    </section>
+
+    <section class="feature-group page-shell bordered" id="guide">
+      <header class="section-heading reveal"><h2>更快记录</h2><p>不用预设格式，也不用急着分类；通过手机、网页和轻量入口，<br class="desktop-only">像聊天一样随时收下脑海里一闪而过的念头</p></header>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">💡</div><h3>灵感在哪里<br>就在哪里记</h3><p>极简输入，多端都能用，三秒收下一个念头</p><a href="#sync">了解详情 <span>→</span></a></div>
+        <div class="art capture-art" role="img" aria-label="手机和网页端记录界面原创插画">
+          <div class="soft-orb orb-a"></div><div class="soft-orb orb-b"></div>
+          <div class="mini-phone"><div class="mini-notch"></div><div class="mini-chat"><b>灵感助手</b><p>把“减少选择”写进本周计划。</p><span>已保存至 #行动</span><i>输入想法...</i></div></div>
+          <div class="editor-card"><header><i></i><b>新笔记</b><span>保存</span></header><p>今天最重要的一件事，不是完成更多，而是明确什么可以不做。</p><div class="tag-line"># 每周计划</div><footer>添加图片　添加标签　···</footer></div>
+        </div>
+      </article>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">🥳</div><h3>怎样更顺手<br>那就怎样记</h3><p>文字、拍照、扫描……保留你习惯的表达方式</p><a href="#workflow">了解详情 <span>→</span></a></div>
+        <div class="art flexible-art" role="img" aria-label="多种输入方式原创插画">
+          <div class="paper-card card-one"><div class="paper-top">15:42　随手记</div><p>在咖啡店画下的新页面结构：</p><div class="wire-sketch"><i></i><i></i><i></i></div><span>#设计记录</span></div>
+          <div class="paper-card card-two"><div class="scan-bar"></div><div class="mosaic scan-image"></div><b>扫描摘录</b><p>真正有用的知识，会在需要时回到你身边。</p></div>
+          <div class="float-action">＋</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="feature-group page-shell bordered review-group">
+      <header class="section-heading reveal"><h2>更好回顾</h2><p>通过标签与搜索，把过去的记录梳理得井井有条；<br class="desktop-only">再借助提醒、卡片和关联，让旧想法重新进入今天</p></header>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">🎉</div><h3>每次点亮屏幕<br>都是一次重逢</h3><p>多种回顾方式，让曾经的记录继续产生价值</p><a href="#footer">了解详情 <span>→</span></a></div>
+        <div class="art review-art" role="img" aria-label="每日回顾原创插画"><div class="review-phone"><div class="wallpaper"></div><div class="clock">08:36<small>7 月 16 日　星期四</small></div><div class="widget"><header><i></i><b>今日回顾</b><span>•••</span></header><p>别急着给一个想法下结论，先允许它生长一阵子。</p><small>187 天前 · #随想</small></div></div><div class="review-note"><b>随机漫步</b><p>每天从旧记录中抽一张卡片，看看今天的自己会怎样回应。</p><button>换一张</button></div></div>
+      </article>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">🪄</div><h3>让点连成线<br>打开新的视角</h3><p>关联笔记，帮你发现想法之间悄悄形成的联系</p><a href="#workflow">了解详情 <span>→</span></a></div>
+        <div class="art relation-art" role="img" aria-label="关联笔记原创插画"><div class="relation-window"><header><i></i><span>笔记关系</span><b>⌕　•••</b></header><div class="relation-columns"><article class="main-note"><small>今天 10:21</small><p>真正的成长不是收藏更多答案，而是提出更好的问题。</p><span>#思考练习</span></article><div class="relation-line"><i></i><i></i><i></i></div><div class="related"><b>可能相关</b><article><small>32 天前</small><p>好问题会改变观察世界的方式。</p></article><article><small>去年</small><p>学习的重点，是建立自己的连接。</p></article></div></div></div></div>
+      </article>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">🗂️</div><h3>标签配合搜索<br>旧笔记不再失踪</h3><p>从关键词到组合标签，想找的内容很快出现</p><a href="#guide">了解详情 <span>→</span></a></div>
+        <div class="art search-art" role="img" aria-label="搜索与标签原创插画"><div class="search-window"><header><span>⌕</span><b>搜索“设计”</b><kbd>esc</kbd></header><aside><strong>筛选</strong><label>全部时间</label><label class="active"># 设计思考</label><label># 灵感</label><label># 项目</label></aside><main><div class="result-count">找到 18 条笔记</div><article><small>昨天</small><p>设计的价值，是把复杂的问题变得可以理解。</p><mark>设计</mark><span>#设计思考</span></article><article><small>6 月 29 日</small><p>今天记录了一组页面留白的观察。</p><span>#设计思考</span></article></main></div></div>
+      </article>
+
+      <article class="feature-row reveal">
+        <div class="feature-copy"><div class="emoji">📊</div><h3>多角度统计<br>让习惯慢慢长成</h3><p>从记录频率到主题变化，更清楚地看见自己</p><a href="#sync">了解详情 <span>→</span></a></div>
+        <div class="art stats-art" role="img" aria-label="记录统计原创插画"><div class="stats-window"><header><b>我的记录</b><span>近一年　⌄</span></header><div class="stat-cards"><div><small>累计笔记</small><strong>1,286</strong><em>↑ 18%</em></div><div><small>坚持天数</small><strong>312</strong><em>连续 24 天</em></div><div><small>本月字符</small><strong>18.4k</strong><em>↑ 7%</em></div></div><div class="chart"><i style="height:32%"></i><i style="height:52%"></i><i style="height:39%"></i><i style="height:73%"></i><i style="height:58%"></i><i style="height:84%"></i><i style="height:68%"></i><i style="height:92%"></i><i style="height:76%"></i><i style="height:96%"></i><span>一月　　二月　　三月　　四月　　五月　　六月　　七月</span></div></div></div>
+      </article>
+    </section>
+
+    <section class="wide-section page-shell bordered reveal" id="sync">
+      <h2>全平台同步，随时记录</h2><p>从手机到电脑，mori 覆盖常用设备；多端内容会自动、安全地保持一致</p>
+      <div class="platform-art" aria-label="多平台同步原创插画"><div class="platform-node"><i class="web-icon">◎</i><span>网页端</span></div><div class="sync-path"><i></i><b>实时同步</b><i></i></div><div class="platform-node"><i class="win-icon">▦</i><span>桌面端</span></div><div class="sync-path"><i></i><b>云端</b><i></i></div><div class="platform-node"><i class="mobile-icon">▯</i><span>移动端</span></div></div>
+    </section>
+
+    <section class="wide-section page-shell reveal" id="workflow">
+      <h2>利用 API 搭建个人工作流</h2><p>通过开放接口连接阅读、稍后读和自动化工具。<br>已经适配多种常见服务，更多连接还在持续加入</p>
+      <div class="workflow-art" aria-label="API 工作流原创插画">
+        <div class="app-bubble bubble-1">R</div><div class="app-bubble bubble-2">⌁</div><div class="app-bubble bubble-3">S</div><div class="app-bubble bubble-4">◈</div><div class="app-bubble bubble-5">Z</div>
+        <div class="code-card"><div class="code-dots"><i></i><i></i><i></i></div><pre><span>POST</span>
+https://api.example.test/v1/memos
+Content-Type: application/json
+
+{
+  "content": "今天值得记住的一句话",
+  "tags": ["阅读", "摘录"]
+}</pre></div>
+      </div>
+    </section>
+
+    <section class="wide-section page-shell reveal not-good">
+      <h2>我们不擅长</h2><p>mori 只专注记录与回顾，不追求把所有工具装进一个产品</p>
+      <div class="comparison-art" aria-label="其他类别应用原创抽象图标"><div><i class="abstract-icon task-icon">✓</i><span><small>任务管理推荐</small><b>清单工具</b></span></div><div><i class="abstract-icon wiki-icon">N</i><span><small>团队协作推荐</small><b>知识库工具</b></span></div><div><i class="abstract-icon map-icon">×</i><span><small>思维导图推荐</small><b>结构工具</b></span></div><div><i class="abstract-icon file-icon">◒</i><span><small>文档写作推荐</small><b>编辑器工具</b></span></div></div>
+    </section>
+
+    <section class="wide-section page-shell reveal privacy" id="privacy"><h2>不出售个人隐私数据</h2><p>保护每一条私人记录，是我们最重要的产品原则。我们不会依靠出售数据获利。<br>你的订阅，将支持我们把产品长期做下去。</p></section>
+
+    <section class="wide-section page-shell reveal final-cta"><h2>让想法汇成河流，从此刻开始</h2><p>我们只在意一件事：帮助你留下更多真实想法，并在未来重新遇见它们。<br>mori = moment + river</p><button class="register bottom-register" data-dialog="免费注册">免费注册</button></section>
+  </main>
+
+  <footer class="site-footer" id="footer"><div class="footer-grid page-shell"><div class="footer-brand"><a class="brand" href="#top"><span class="brand-leaf"></span><span>mori</span></a><p>轻量记录，温柔回看。</p></div><div><h3>产品</h3><a href="#sync">桌面端</a><a href="#sync">手机端</a><a href="#workflow">网页插件</a><a href="#privacy">隐私协议</a><a href="#footer">用户协议</a></div><div><h3>资源</h3><a href="#guide">mori 101</a><a href="#guide">快速上手</a><a href="#guide">常见用法</a><a href="#workflow">思维方式</a><a href="#workflow">API 文档</a></div><div><h3>联系我们</h3><a href="#footer">社区动态</a><a href="#footer">用户交流</a><a href="#footer">内容频道</a><a href="mailto:hello@example.test">邮件联系</a></div><div><h3>团队</h3><a href="#footer">关于我们</a><a href="#footer">产品故事</a><span>某某创意工作室</span><span>展示备案号 00000000</span><span>本页仅作前端演示</span></div></div></footer>
+
+  <div class="dialog-backdrop" id="dialogBackdrop" hidden></div>
+  <div class="demo-dialog" id="demoDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" hidden><button class="dialog-close" id="dialogClose" aria-label="关闭">×</button><div class="dialog-logo"><span class="brand-leaf"></span></div><h2 id="dialogTitle">欢迎使用 mori</h2><p>这是脱敏的前端展示页面，不会收集或提交任何真实账号信息。</p><button class="register dialog-ok" id="dialogOk">我知道了</button></div>
+  <script src="script.js"></script>
+</body>
+</html>
