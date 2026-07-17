@@ -30,12 +30,11 @@
         <h1 id="intro-title"><span>1000 元起</span><br>拥有永久在线的全球主页</h1>
         <p class="lead">用一个清晰、专业且适配手机的网站，认真介绍你的企业、业务与个人价值。</p>
 
-        <div class="scene-list" aria-label="适用业务场景">
-          <span>中小企业官网</span>
-          <span>外贸业务介绍</span>
-          <span>个人电子名片</span>
-          <span>工作室作品集</span>
-          <span>产品与项目展示</span>
+        <div class="business-list" aria-label="千元建站业务介绍">
+          <article><span>01</span><div><h2>企业官网与业务主页</h2><p>适合中小企业、传统行业和外贸团队，用一个专业页面集中介绍公司、产品、制造能力与联系方式。</p></div></article>
+          <article><span>02</span><div><h2>个人品牌与电子名片</h2><p>适合自由职业者、顾问、创作者和工作室，展示个人经历、专业能力、代表作品与合作方式。</p></div></article>
+          <article><span>03</span><div><h2>产品、项目与活动展示</h2><p>适合新品发布、项目介绍、招商推广或活动宣传，让访客快速理解你的核心价值。</p></div></article>
+          <article><span>04</span><div><h2>响应式页面与全球托管</h2><p>一次完成电脑和手机端适配，并部署到海外服务节点，为不同国家和地区的访客提供稳定访问。</p></div></article>
         </div>
 
         <div class="scope-note">
@@ -45,8 +44,7 @@
       </div>
 
       <div class="intro-footer">
-        <a class="primary-button" href="#pricing">查看透明报价 <span>↓</span></a>
-        <div class="service-points"><span>响应式设计</span><span>全球访问</span><span>源码交付</span></div>
+        <button class="primary-button" type="button" data-open-pricing>查看透明报价 <span>↗</span></button>
       </div>
     </section>
 
@@ -71,7 +69,29 @@
       <div class="showcase-footer"><span>企业官网 · 产品目录 · 新闻展示</span><strong>查看完整案例</strong></div>
     </a>
 
-    <section class="panel pricing-panel" id="pricing" aria-labelledby="pricing-title">
+    <a class="panel showcase showcase-digital" id="case-digital" href="http://pagepilot.top/demo_1" aria-label="查看互联网业务主页案例">
+      <div class="showcase-head">
+        <div><p class="case-index">CASE 02 · 互联网业务</p><h2>互联网业务主页展示</h2><p>用更轻盈的产品语言，讲清服务价值、核心功能与品牌个性。</p></div>
+        <span class="case-arrow" aria-hidden="true">↗</span>
+      </div>
+
+      <div class="digital-preview preview-window" aria-hidden="true">
+        <div class="browser-bar"><i></i><i></i><i></i><span>product.example</span></div>
+        <div class="digital-screen">
+          <div class="mini-digital-nav"><b><i></i>mori</b><span>产品　下载　会员　登录</span></div>
+          <div class="digital-copy"><small>记录每一个闪光时刻</small><strong>持续记录，<br><em>答案自然浮现</em></strong><p>轻量记录，温柔回看。</p><button>免费体验</button></div>
+          <div class="device-stack"><div class="device-laptop"><header></header><main><aside></aside><section><i></i><i></i><i></i></section></main></div><div class="device-phone"><span></span><i></i><i></i><i></i></div><div class="floating-note"><small># 灵感</small><p>从一张卡片开始，让想法慢慢汇成河流。</p></div></div>
+        </div>
+      </div>
+
+      <div class="showcase-footer"><span>产品介绍 · 功能演示 · 品牌表达</span><strong>查看完整案例</strong></div>
+    </a>
+  </main>
+
+  <div class="modal-backdrop" data-pricing-backdrop hidden></div>
+  <section class="pricing-modal" id="pricing" data-pricing-modal role="dialog" aria-modal="true" aria-labelledby="pricing-title" hidden>
+    <button class="modal-close" type="button" data-close-pricing aria-label="关闭报价弹窗">×</button>
+    <div class="modal-scroll">
       <header class="pricing-head">
         <div><p class="eyebrow">SIMPLE PRICING</p><h2 id="pricing-title">价格清楚，长期安心</h2></div>
         <div class="starting-price"><small>建站费用</small><strong>¥1,000</strong><span>起</span></div>
@@ -93,26 +113,8 @@
       </ol>
 
       <p class="pricing-footnote">以上报价适用于内容展示型前端主页；多语言、额外页面或特殊功能将根据实际需求单独确认。</p>
-    </section>
-
-    <a class="panel showcase showcase-digital" id="case-digital" href="http://pagepilot.top/demo_1" aria-label="查看互联网业务主页案例">
-      <div class="showcase-head">
-        <div><p class="case-index">CASE 02 · 互联网业务</p><h2>互联网业务主页展示</h2><p>用更轻盈的产品语言，讲清服务价值、核心功能与品牌个性。</p></div>
-        <span class="case-arrow" aria-hidden="true">↗</span>
-      </div>
-
-      <div class="digital-preview preview-window" aria-hidden="true">
-        <div class="browser-bar"><i></i><i></i><i></i><span>product.example</span></div>
-        <div class="digital-screen">
-          <div class="mini-digital-nav"><b><i></i>mori</b><span>产品　下载　会员　登录</span></div>
-          <div class="digital-copy"><small>记录每一个闪光时刻</small><strong>持续记录，<br><em>答案自然浮现</em></strong><p>轻量记录，温柔回看。</p><button>免费体验</button></div>
-          <div class="device-stack"><div class="device-laptop"><header></header><main><aside></aside><section><i></i><i></i><i></i></section></main></div><div class="device-phone"><span></span><i></i><i></i><i></i></div><div class="floating-note"><small># 灵感</small><p>从一张卡片开始，让想法慢慢汇成河流。</p></div></div>
-        </div>
-      </div>
-
-      <div class="showcase-footer"><span>产品介绍 · 功能演示 · 品牌表达</span><strong>查看完整案例</strong></div>
-    </a>
-  </main>
+    </div>
+  </section>
 
   <footer class="page-footer">
     <p>千元建站 · 让每一项认真经营的业务，都拥有一个可信赖的全球主页。</p>

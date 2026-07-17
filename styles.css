@@ -21,7 +21,7 @@ button{font:inherit}
 .skip-link{position:fixed;left:18px;top:-60px;z-index:50;padding:10px 16px;border-radius:12px;background:#fff;box-shadow:var(--shadow)}
 .skip-link:focus{top:18px}
 
-.quote-grid{width:min(1580px,calc(100% - 32px));min-height:100svh;margin:0 auto;padding:16px 0;display:grid;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);grid-template-rows:repeat(2,minmax(420px,1fr));grid-template-areas:"one two" "three four";gap:14px}
+.quote-grid{width:min(1580px,calc(100% - 32px));min-height:100svh;margin:0 auto;padding:16px 0;display:grid;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);grid-template-rows:repeat(2,minmax(420px,1fr));grid-template-areas:"one two" "one four";gap:14px}
 .panel{position:relative;min-width:0;border:1px solid rgba(25,55,44,.09);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
 .intro-panel{grid-area:one;background:var(--paper);padding:clamp(28px,3vw,48px);display:flex;flex-direction:column}
 .showcase-hardware{grid-area:two}
@@ -43,12 +43,17 @@ button{font:inherit}
 .lead{max-width:610px;margin:22px 0 18px;color:#52605a;font-size:clamp(15px,1.2vw,18px);line-height:1.75}
 .scene-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:21px}
 .scene-list span{padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:#fafbfa;color:#53615b;font-size:11px}
+.business-list{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:0 0 20px}
+.business-list article{display:flex;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fafbfa}
+.business-list article>span{flex:0 0 24px;color:#7a8982;font:700 9px/1.5 Arial,sans-serif;letter-spacing:.08em}
+.business-list h2{margin:0 0 5px;font-size:13px;line-height:1.4;letter-spacing:0}
+.business-list p{margin:0;color:#69756f;font-size:10px;line-height:1.6}
 .scope-note{display:flex;gap:12px;align-items:flex-start;max-width:650px;padding:14px 16px;border-radius:14px;background:#f5f8f6;border:1px solid #e5ebe7}
 .scope-icon{flex:0 0 22px;width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:var(--green-soft);color:var(--green);font:700 12px Georgia,serif}
 .scope-note p{margin:0;color:#5f6e67;font-size:11px;line-height:1.65}
 .scope-note strong{display:block;margin-bottom:2px;color:#33453d;font-size:12px}
 .intro-footer{display:flex;align-items:center;justify-content:space-between;gap:20px}
-.primary-button{display:inline-flex;align-items:center;gap:24px;min-height:45px;padding:0 19px;border-radius:12px;background:var(--green);color:#fff;font-size:13px;font-weight:700;box-shadow:0 9px 24px rgba(11,116,104,.19);transition:transform .25s var(--ease),background .25s}
+.primary-button{display:inline-flex;align-items:center;gap:24px;min-height:45px;padding:0 19px;border:0;border-radius:12px;background:var(--green);color:#fff;font-size:13px;font-weight:700;box-shadow:0 9px 24px rgba(11,116,104,.19);cursor:pointer;transition:transform .25s var(--ease),background .25s}
 .primary-button:hover{transform:translateY(-2px);background:#08665c}
 .primary-button span{font-size:16px}
 .service-points{display:flex;gap:14px;color:#718079;font-size:10px;white-space:nowrap}
@@ -113,6 +118,21 @@ button{font:inherit}
 .page-footer{width:min(1580px,calc(100% - 32px));margin:0 auto;padding:9px 5px 18px;display:flex;justify-content:space-between;gap:30px;color:#7e8983;font-size:10px;line-height:1.5}
 .page-footer p{margin:0}
 
+.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(34,52,45,.22);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;transition:opacity .22s ease}
+.pricing-modal{position:fixed;z-index:101;left:50%;top:50%;width:50vw;height:50vh;overflow:hidden;border:1px solid rgba(255,255,255,.75);border-radius:26px;background:rgba(248,247,242,.9);box-shadow:0 28px 90px rgba(27,49,40,.22);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);opacity:0;transform:translate(-50%,-47%) scale(.98);transition:opacity .22s ease,transform .22s var(--ease)}
+.modal-open{overflow:hidden}
+.modal-open .modal-backdrop{opacity:1}
+.modal-open .pricing-modal{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.modal-close{position:absolute;right:17px;top:17px;z-index:2;width:38px;height:38px;border:1px solid rgba(31,62,50,.12);border-radius:50%;background:rgba(255,255,255,.68);color:#30473e;font-size:24px;line-height:1;cursor:pointer;transition:background .2s,transform .2s}
+.modal-close:hover{background:#fff;transform:rotate(4deg)}
+.modal-scroll{height:100%;overflow:auto;padding:clamp(28px,3vw,46px);scrollbar-width:thin;scrollbar-color:#b8c4bd transparent}
+.pricing-modal .pricing-head{padding-right:45px;margin-bottom:20px}
+.pricing-modal .price-list{display:grid;grid-template-columns:1fr;gap:9px;overflow:visible}
+.pricing-modal .price-list li{padding:15px 17px;background:rgba(255,255,255,.62)}
+.pricing-modal .price-list h3{font-size:14px}
+.pricing-modal .price-list p{font-size:11px;line-height:1.7}
+.pricing-modal .pricing-footnote{margin-top:14px;padding-top:0}
+
 @media(max-width:1100px){
   .quote-grid{grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(480px,1fr))}
   .price-list{grid-template-columns:1fr;overflow:auto;padding-right:4px}
@@ -123,13 +143,14 @@ button{font:inherit}
 
 @media(max-width:780px){
   :root{--radius:22px}
-  .quote-grid{width:min(100% - 20px,680px);padding:10px 0;grid-template-columns:1fr;grid-template-rows:auto;grid-template-areas:"one" "three" "two" "four";gap:10px}
+  .quote-grid{width:min(100% - 20px,680px);padding:10px 0;grid-template-columns:1fr;grid-template-rows:auto;grid-template-areas:"one" "two" "four";gap:10px}
   .panel{min-height:0}
   .intro-panel{padding:26px 22px 24px}
   .service-badge{font-size:9px;padding:6px 8px}
   .intro-copy{padding:52px 0 39px}
   .intro-copy h1{font-size:clamp(40px,12.2vw,58px)}
   .lead{font-size:15px;margin-top:20px}
+  .business-list{grid-template-columns:1fr}.business-list h2{font-size:14px}.business-list p{font-size:11px}
   .scope-note{margin-top:4px}
   .intro-footer{align-items:flex-start}
   .primary-button{width:100%;justify-content:space-between}
@@ -146,6 +167,8 @@ button{font:inherit}
   .showcase-footer{font-size:9px}.showcase-footer strong{font-size:10px}
   .hardware-copy strong,.digital-copy strong{font-size:19px}
   .page-footer{width:calc(100% - 28px);padding:10px 0 22px;flex-direction:column;gap:4px;font-size:9px}
+  .pricing-modal{width:90vw;height:76vh;min-width:0;min-height:0;border-radius:22px}
+  .modal-scroll{padding:28px 20px}.pricing-modal .pricing-head{padding-right:34px}.pricing-modal .pricing-head h2{font-size:24px}
 }
 
 @media(max-width:430px){
