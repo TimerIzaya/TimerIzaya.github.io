@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://api.github.com; img-src 'self' blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <title>五金网站内容管理后台</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="config.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">跳到主要内容</a>
+
+  <noscript>
+    <div class="noscript-notice" role="alert">
+      此后台需要 JavaScript 才能读取和发布网站内容，请启用 JavaScript 后重新打开页面。
+    </div>
+  </noscript>
+
+  <header class="admin-header">
+    <div class="admin-header__inner">
+      <a class="admin-brand" href="../demo_0/" target="_blank" rel="noopener noreferrer" aria-label="在新窗口打开五金网站">
+        <span class="admin-brand__mark" aria-hidden="true"></span>
+        <span>
+          <strong>五金网站内容管理后台</strong>
+          <small>Website Content Manager</small>
+        </span>
+      </a>
+      <span class="environment-badge">GitHub Pages</span>
+    </div>
+  </header>
+
+  <main id="mainContent" class="admin-main" tabindex="-1">
+    <section id="connectionView" class="app-view connection-view" aria-labelledby="connectionTitle">
+      <div class="connection-card">
+        <header class="connection-card__header">
+          <span class="section-kicker">安全连接</span>
+          <h1 id="connectionTitle">连接网站仓库</h1>
+          <p>输入具有指定仓库 Contents 读写权限的 GitHub 细粒度访问令牌，加载当前线上内容。</p>
+        </header>
+
+        <div class="connection-layout">
+          <div class="connection-form-column">
+            <dl class="repository-summary" aria-label="固定发布目标">
+              <div>
+                <dt>当前仓库</dt>
+                <dd id="connectionRepoMeta">正在读取配置…</dd>
+              </div>
+              <div>
+                <dt>当前分支</dt>
+                <dd id="connectionBranchMeta">正在读取配置…</dd>
+              </div>
+            </dl>
+
+            <form id="connectionForm" class="connection-form" novalidate>
+              <div class="form-field">
+                <label for="tokenInput">GitHub 访问令牌</label>
+                <div class="token-control">
+                  <input
+                    id="tokenInput"
+                    name="github-token"
+                    type="password"
+                    inputmode="text"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    required
+                    aria-describedby="tokenHelp tokenWarning"
+                    placeholder="请输入 Fine-grained personal access token"
+                  >
+                  <button
+                    id="toggleTokenButton"
+                    class="token-toggle"
+                    type="button"
+                    aria-controls="tokenInput"
+                    aria-pressed="false"
+                    aria-label="显示 GitHub 令牌"
+                  >显示</button>
+                </div>
+                <p id="tokenHelp" class="field-help">令牌只用于访问配置中固定的仓库、分支和内容路径。</p>
+              </div>
+
+              <label class="checkbox-field" for="rememberToken">
+                <input id="rememberToken" name="remember-token" type="checkbox">
+                <span>
+                  <strong>记住令牌</strong>
+                  <small>勾选后保存到此浏览器的 localStorage；不勾选时仅在当前会话保存。</small>
+                </span>
+              </label>
+
+              <div class="connection-actions">
+                <button id="connectButton" class="button button--primary button--large" type="button">
+                  <span class="button__label">连接并加载网站</span>
+                </button>
+                <button id="clearTokenButton" class="button button--ghost" type="button">清除已保存令牌</button>
+              </div>
+            </form>
+
+            <div id="connectionStatus" class="inline-status" role="status" aria-live="polite" aria-atomic="true"></div>
+          </div>
+
+          <aside class="security-notice" aria-labelledby="securityNoticeTitle">
+            <div class="security-notice__icon" aria-hidden="true">✓</div>
+            <div>
+              <h2 id="securityNoticeTitle">令牌安全提示</h2>
+              <p id="tokenWarning">GitHub 令牌仅保存在您的当前浏览器中，用于修改指定网站仓库。请勿在公共电脑上使用。</p>
+              <ul>
+                <li>建议只授权当前网站仓库。</li>
+                <li>权限仅选择 Contents：Read and write。</li>
+                <li>为令牌设置合理的有效期。</li>
+                <li>令牌泄露后请立即在 GitHub 撤销。</li>
+              </ul>
+              <p class="security-notice__footnote">此静态页面不是服务器登录系统；仓库写入权限由 GitHub 令牌控制。</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section id="loadingView" class="app-view state-view" aria-labelledby="loadingTitle" aria-busy="true" hidden>
+      <div class="state-card">
+        <span class="spinner spinner--large" aria-hidden="true"></span>
+        <p class="section-kicker">正在连接 GitHub</p>
+        <h1 id="loadingTitle">加载网站内容</h1>
+        <p id="loadingMessage" role="status" aria-live="polite" aria-atomic="true">正在读取网站内容文件，请稍候…</p>
+        <div class="loading-track" aria-hidden="true"><span></span></div>
+      </div>
+    </section>
+
+    <section id="editorView" class="app-view editor-view" aria-labelledby="siteNameHeading" hidden>
+      <header class="editor-summary">
+        <div class="editor-summary__title">
+          <span class="section-kicker">内容编辑</span>
+          <h1 id="siteNameHeading">网站内容</h1>
+          <p>按页面顺序编辑文字、链接、图片和配色，预览确认后再发布。</p>
+        </div>
+        <div class="editor-summary__status">
+          <span id="dirtyStatus" class="status-badge status-badge--clean" role="status" aria-live="polite">已与线上内容同步</span>
+          <a id="openSiteLink" class="button button--secondary button--small" href="../demo_0/" target="_blank" rel="noopener noreferrer">打开线上网站</a>
+        </div>
+
+        <dl class="editor-meta" aria-label="当前网站发布信息">
+          <div>
+            <dt>仓库</dt>
+            <dd id="repoMeta">—</dd>
+          </div>
+          <div>
+            <dt>分支</dt>
+            <dd id="branchMeta">—</dd>
+          </div>
+          <div>
+            <dt>内容文件</dt>
+            <dd id="pathMeta">—</dd>
+          </div>
+          <div>
+            <dt>最后加载</dt>
+            <dd id="lastLoadedMeta">—</dd>
+          </div>
+        </dl>
+      </header>
+
+      <div id="validationSummary" class="validation-summary" role="alert" tabindex="-1" hidden>
+        <h2>请先修正以下内容</h2>
+        <ul id="validationList"></ul>
+      </div>
+
+      <div class="editor-workspace">
+        <div class="editor-main-column">
+          <div class="editor-section-toolbar" aria-label="内容编辑提示">
+            <p><strong>提示：</strong>选择的新图片只会在本地预览，点击“发布网站”后才会上传到 GitHub。</p>
+          </div>
+          <div id="editorSections" class="editor-sections" aria-label="网站内容编辑区域">
+            <div class="editor-placeholder" role="status">
+              <span class="spinner" aria-hidden="true"></span>
+              <p>正在准备可视化编辑表单…</p>
+            </div>
+          </div>
+        </div>
+
+        <aside id="previewPanel" class="preview-panel" aria-labelledby="previewTitle">
+          <header class="preview-panel__header">
+            <div>
+              <span class="section-kicker">本地预览</span>
+              <h2 id="previewTitle">修改效果</h2>
+            </div>
+            <button id="closePreviewButton" class="icon-button" type="button" aria-label="关闭预览面板" title="关闭预览">×</button>
+          </header>
+          <p class="preview-panel__note">预览不会上传或修改线上网站。</p>
+          <div class="preview-device" aria-label="网站预览窗口">
+            <div class="preview-device__bar" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div id="previewRoot" class="preview-root" role="document" tabindex="0">
+              <div class="preview-empty">
+                <span aria-hidden="true">▣</span>
+                <p>编辑内容后可在这里查看首页、产品和联系信息预览。</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="publish-bar" aria-label="网站发布操作">
+        <div class="publish-bar__secondary">
+          <button id="reloadButton" class="button button--secondary" type="button">重新加载线上内容</button>
+          <button id="undoButton" class="button button--secondary" type="button">撤销本次修改</button>
+          <button id="previewButton" class="button button--secondary" type="button" aria-controls="previewPanel">预览修改</button>
+          <button id="clearTokenEditorButton" class="button button--ghost button--danger-text" type="button">清除 GitHub 令牌</button>
+        </div>
+        <div class="publish-bar__primary">
+          <p><strong>确认无误后发布</strong><span>提交后 GitHub Pages 通常需要 1 至 10 分钟更新。</span></p>
+          <button id="publishButton" class="button button--primary button--large" type="button">发布网站</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultPanel" class="app-view result-view" aria-labelledby="resultTitle" aria-live="polite" hidden>
+      <div class="result-card" data-result="success">
+        <div class="result-icon" aria-hidden="true">✓</div>
+        <p class="section-kicker">发布结果</p>
+        <h1 id="resultTitle">网站内容发布结果</h1>
+        <p id="resultMessage" class="result-message">发布结果将在这里显示。</p>
+
+        <dl class="result-details">
+          <div>
+            <dt>提交 SHA</dt>
+            <dd><code id="resultSha">—</code></dd>
+          </div>
+          <div>
+            <dt>GitHub 提交</dt>
+            <dd><a id="resultCommitLink" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">—</a></dd>
+          </div>
+          <div>
+            <dt>公开网站</dt>
+            <dd><a id="resultSiteLink" href="../demo_0/" target="_blank" rel="noopener noreferrer">../demo_0/</a></dd>
+          </div>
+          <div>
+            <dt>发布时间</dt>
+            <dd><time id="resultTime">—</time></dd>
+          </div>
+        </dl>
+
+        <div class="result-actions">
+          <a id="resultOpenSite" class="button button--primary button--large" href="../demo_0/" target="_blank" rel="noopener noreferrer">打开网站</a>
+          <button id="resultReloadButton" class="button button--secondary button--large" type="button">重新加载线上内容</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="admin-footer">
+    <p>纯静态 GitHub Pages 内容管理工具 · 请勿在公共电脑保存访问令牌</p>
+  </footer>
+
+  <div id="publishOverlay" class="publish-overlay" role="dialog" aria-modal="true" aria-labelledby="publishOverlayTitle" aria-describedby="publishStage" hidden>
+    <div class="publish-progress-card">
+      <div class="publish-progress-card__heading">
+        <span class="spinner spinner--large" aria-hidden="true"></span>
+        <div>
+          <p class="section-kicker">请保持页面开启</p>
+          <h2 id="publishOverlayTitle">正在发布网站</h2>
+        </div>
+      </div>
+      <p id="publishStage" class="publish-stage" role="status" aria-live="assertive" aria-atomic="true">正在检查网站内容……</p>
+      <progress id="publishProgressBar" max="8" value="0" aria-label="发布进度"></progress>
+      <ol id="publishProgressList" class="publish-progress-list" aria-label="发布步骤">
+        <li data-stage="validate"><span aria-hidden="true">1</span>检查网站内容</li>
+        <li data-stage="process-images"><span aria-hidden="true">2</span>处理上传图片</li>
+        <li data-stage="upload-images"><span aria-hidden="true">3</span>逐张上传图片</li>
+        <li data-stage="read-latest"><span aria-hidden="true">4</span>读取 GitHub 最新版本</li>
+        <li data-stage="generate-json"><span aria-hidden="true">5</span>生成网站 JSON</li>
+        <li data-stage="commit-content"><span aria-hidden="true">6</span>提交网站内容</li>
+        <li data-stage="wait-response"><span aria-hidden="true">7</span>等待 GitHub API 返回</li>
+        <li data-stage="complete"><span aria-hidden="true">8</span>完成提交</li>
+      </ol>
+      <p class="publish-progress-card__warning">发布期间请勿刷新或关闭页面，避免中断提交流程。</p>
+    </div>
+  </div>
+
+  <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmDialogTitle" aria-describedby="confirmDialogDescription">
+    <form method="dialog">
+      <div class="confirm-dialog__icon" aria-hidden="true">!</div>
+      <h2 id="confirmDialogTitle">确认发布网站</h2>
+      <p id="confirmDialogDescription">发布后将修改线上网站内容，是否继续？</p>
+      <p class="confirm-dialog__note">新图片会先逐张上传，全部成功后才会更新网站内容文件。</p>
+      <div class="confirm-dialog__actions">
+        <button id="cancelPublishButton" class="button button--secondary" type="button">取消</button>
+        <button id="confirmPublishButton" class="button button--primary" type="button">确认发布</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="globalStatus" class="global-status" role="status" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

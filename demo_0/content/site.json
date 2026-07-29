@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-28T00:00:00.000Z",
+  "site": {
+    "siteName": "锐界精工企业展示网站",
+    "companyName": "锐界精工",
+    "companyNameEn": "RUIJIE PRECISION",
+    "logoImage": "",
+    "logoAlt": "锐界精工企业标志",
+    "logoDescription": "锐界精工红黑几何标志",
+    "welcomeText": "欢迎访问锐界精工企业展示网站",
+    "tagline": "专业家具功能五金解决方案"
+  },
+  "navigation": [
+    { "key": "home", "label": "首页", "href": "index.html" },
+    { "key": "about", "label": "关于我们", "href": "about.html" },
+    { "key": "products", "label": "产品中心", "href": "products.html" },
+    { "key": "news", "label": "新闻中心", "href": "news.html" },
+    { "key": "contact", "label": "联系我们", "href": "contact.html" }
+  ],
+  "hero": {
+    "eyebrow": "Precision · Quality · Innovation",
+    "title": "品质引领",
+    "highlight": "连接未来",
+    "subtitle": "专注家具功能五金 · 精密制造每一个细节",
+    "intro": "以稳定品质、精密工艺和持续创新，为每一次可靠连接提供支持。",
+    "primaryButtonText": "探索产品",
+    "primaryButtonLink": "products.html",
+    "secondaryButtonText": "了解我们",
+    "secondaryButtonLink": "about.html",
+    "image": "assets/hero-hardware.png",
+    "imageAlt": "现代五金生产与家具应用场景"
+  },
+  "homeAbout": {
+    "sectionEyebrow": "ABOUT RUIJIE",
+    "sectionTitle": "关于锐界精工",
+    "subtitle": "Quality leads · Connecting the future",
+    "title": "专于精工，",
+    "titleHighlight": "始于热爱",
+    "body": "我们是一家专注家具功能五金研发、生产与服务的现代制造企业。以质量为生命，以创新为动力，以服务为品牌依托。持续投入精密加工与自动化检测，只为让每一次连接更加稳定、可靠、长久。",
+    "buttonText": "进一步了解",
+    "buttonLink": "about.html",
+    "image": "assets/factory.png",
+    "imageAlt": "锐界精工现代化生产车间"
+  },
+  "productSection": {
+    "eyebrow": "PRODUCT CENTER",
+    "title": "产品中心",
+    "subtitle": "覆盖连接、支撑、滑动与照明的家具功能五金方案",
+    "categories": [
+      {
+        "name": "连接件系列",
+        "nameEn": "CONNECTOR SERIES",
+        "summary": "面向柜体与板式家具的稳定连接方案。",
+        "link": "products.html",
+        "image": "assets/product-set.png",
+        "imageAlt": "精密家具连接件系列"
+      },
+      {
+        "name": "灯光系统",
+        "nameEn": "LIGHTING SYSTEM",
+        "summary": "兼顾照明效果与便捷安装的柜内灯光系统。",
+        "link": "products.html",
+        "image": "assets/hero-hardware.png",
+        "imageAlt": "家具柜内灯光五金系统"
+      },
+      {
+        "name": "滑轨与铰链",
+        "nameEn": "SLIDE & HINGE",
+        "summary": "顺滑、静音且耐久的开合与承托系统。",
+        "link": "products.html",
+        "image": "assets/factory.png",
+        "imageAlt": "家具滑轨与铰链产品"
+      }
+    ]
+  },
+  "stats": [
+    { "number": "12", "label": "年制造经验", "description": "持续积累五金制造经验" },
+    { "number": "38", "label": "精密工序", "description": "标准化生产流程" },
+    { "number": "100", "label": "品质检测项", "description": "覆盖关键性能指标" },
+    { "number": "24h", "label": "快速服务响应", "description": "及时回应客户需求" }
+  ],
+  "aboutPage": {
+    "bannerTitle": "关于我们",
+    "bannerSubtitle": "ABOUT US",
+    "bannerImage": "assets/factory.png",
+    "bannerImageAlt": "锐界精工生产基地",
+    "storyEyebrow": "OUR STORY",
+    "storyTitle": "以精密制造\n成就可靠连接",
+    "storyBody": "锐界精工创立于华南制造业腹地，是一家专注家具功能五金的研发、制造与服务企业。我们用严谨的工程思维理解每一个连接结构，用标准化制造守护每一次产品交付。\n\n从材料选择、模具开发到精密加工和质量检测，团队始终围绕稳定、耐用、易安装持续改进。面向未来，我们希望成为值得长期信赖的功能五金伙伴。",
+    "storyImage": "assets/factory.png",
+    "storyImageAlt": "锐界精工制造团队与车间",
+    "manufacturingEyebrow": "MANUFACTURING",
+    "manufacturingTitle": "智造实力",
+    "manufacturingHeading": "数字化驱动精益生产",
+    "manufacturingBody": "自动化加工设备、标准化作业流程与全过程质量追溯共同构成稳定制造体系。通过持续优化生产节拍和检测能力，在效率与品质之间建立更好的平衡。",
+    "manufacturingButtonText": "联系我们",
+    "manufacturingButtonLink": "contact.html",
+    "manufacturingImage": "assets/product-set.png",
+    "manufacturingImageAlt": "数字化五金生产设备"
+  },
+  "advantages": {
+    "eyebrow": "OUR ADVANTAGES",
+    "title": "企业优势",
+    "subtitle": "用标准、技术和协同守护每一次交付",
+    "items": [
+      { "icon": "◇", "name": "品质为本", "description": "用标准守住每个细节，建立全过程质量追溯。" },
+      { "icon": "◎", "name": "持续创新", "description": "用技术回应真实需求，持续优化结构与工艺。" },
+      { "icon": "△", "name": "客户至上", "description": "用专业创造长期价值，提供清晰及时的支持。" },
+      { "icon": "✦", "name": "协同共进", "description": "用信任凝聚团队力量，与客户和伙伴共同成长。" }
+    ]
+  },
+  "process": {
+    "eyebrow": "SERVICE PROCESS",
+    "title": "服务流程",
+    "subtitle": "从需求沟通到持续服务，每一步清晰可追踪",
+    "items": [
+      { "name": "需求沟通", "description": "了解应用场景、尺寸、性能与交付要求。" },
+      { "name": "方案确认", "description": "完成产品选型、样品验证与技术细节确认。" },
+      { "name": "生产交付", "description": "按标准组织制造、检测、包装与进度反馈。" },
+      { "name": "售后支持", "description": "提供安装指导、问题响应和持续改进服务。" }
+    ]
+  },
+  "cases": {
+    "eyebrow": "PROJECT CASES",
+    "title": "案例展示",
+    "subtitle": "可靠五金服务多元家具与空间场景",
+    "items": [
+      {
+        "name": "定制家居连接系统",
+        "summary": "为全屋定制项目提供标准化连接件组合。",
+        "details": "通过统一规格与快装结构，帮助现场提升装配效率并保持稳定外观。",
+        "link": "contact.html",
+        "image": "assets/product-set.png",
+        "imageAlt": "定制家居五金连接系统案例"
+      },
+      {
+        "name": "办公家具静音升级",
+        "summary": "面向高频使用空间优化滑轨与铰链体验。",
+        "details": "结合承重、耐久与静音要求完成选型，并提供安装调试建议。",
+        "link": "contact.html",
+        "image": "assets/hero-hardware.png",
+        "imageAlt": "办公家具滑轨铰链应用案例"
+      },
+      {
+        "name": "商业空间柜内照明",
+        "summary": "将线性灯光与感应控制融入展示柜体。",
+        "details": "兼顾布线、散热和维护便利性，形成整洁一致的照明效果。",
+        "link": "contact.html",
+        "image": "assets/factory.png",
+        "imageAlt": "商业展示柜内灯光系统案例"
+      }
+    ]
+  },
+  "productsPage": {
+    "bannerTitle": "产品中心",
+    "bannerSubtitle": "PRODUCT CENTER",
+    "bannerImage": "assets/hero-hardware.png",
+    "bannerImageAlt": "家具五金产品组合",
+    "categoryTitle": "产品分类",
+    "allCategoryLabel": "全部产品",
+    "viewDetailsText": "查看详情",
+    "categories": ["家具连接件", "灯光照明系统", "滑轨系列", "铰链系列"],
+    "products": [
+      { "name": "精密偏心连接件", "category": "家具连接件", "summary": "适用于板式家具的高强度隐蔽连接。", "details": "结构稳定，安装便捷，适配多种柜体应用。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "精密偏心家具连接件" },
+      { "name": "静音缓冲铰链", "category": "铰链系列", "summary": "让柜门开合轻柔顺畅。", "details": "集成缓冲结构，兼顾耐久性能与安装调节效率。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "静音缓冲家具铰链" },
+      { "name": "全拉出隐藏滑轨", "category": "滑轨系列", "summary": "隐藏安装并充分利用抽屉空间。", "details": "顺滑承托，支持多向调节，适合中高端柜体。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "全拉出隐藏式抽屉滑轨" },
+      { "name": "嵌入式线性灯", "category": "灯光照明系统", "summary": "为柜内提供均匀柔和的线性照明。", "details": "紧凑嵌入式结构，可结合感应控制与多种色温。", "link": "contact.html", "image": "assets/hero-hardware.png", "imageAlt": "家具嵌入式线性灯" },
+      { "name": "金属柜体拉手", "category": "家具连接件", "summary": "简洁耐用的柜体启闭部件。", "details": "多种尺寸与表面处理可选，握持舒适。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "金属家具柜体拉手" },
+      { "name": "快装层板托", "category": "家具连接件", "summary": "提升柜体层板安装与维护效率。", "details": "定位清晰，拆装便捷，兼顾隐蔽性与承托性能。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "家具快装层板托" },
+      { "name": "阻尼上翻支撑", "category": "铰链系列", "summary": "为上翻柜门提供稳定支撑。", "details": "动作平顺，可根据门板参数选择合适规格。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "柜门阻尼上翻支撑" },
+      { "name": "柜内感应照明", "category": "灯光照明系统", "summary": "开门即亮的便捷柜内照明方案。", "details": "支持多种感应方式与灯具组合，布置灵活。", "link": "contact.html", "image": "assets/hero-hardware.png", "imageAlt": "家具柜内感应照明系统" },
+      { "name": "重型抽屉滑轨", "category": "滑轨系列", "summary": "面向大尺寸抽屉的可靠承托。", "details": "高承载、耐久顺滑，适应频繁使用场景。", "link": "contact.html", "image": "assets/product-set.png", "imageAlt": "重型家具抽屉滑轨" }
+    ]
+  },
+  "news": {
+    "homeEyebrow": "NEWS CENTER",
+    "homeTitle": "新闻动态",
+    "bannerTitle": "新闻中心",
+    "bannerSubtitle": "NEWS CENTER",
+    "bannerImage": "assets/factory.png",
+    "bannerImageAlt": "锐界精工企业新闻",
+    "listEyebrow": "LATEST INFORMATION",
+    "listTitle": "企业资讯",
+    "readMoreText": "阅读更多",
+    "detailBannerTitle": "资讯详情",
+    "detailBannerSubtitle": "NEWS DETAIL",
+    "sourceLabel": "锐界精工",
+    "items": [
+      {
+        "date": "2026-06-18",
+        "title": "企业精益生产体系完成新一轮升级",
+        "summary": "围绕产品一致性与交付效率，生产现场完成流程再造与检测节点优化。",
+        "body": "近日，锐界精工精益生产体系新一轮升级正式完成。本次升级覆盖来料、加工、装配、检测与入库等关键环节，通过更清晰的工序标准和可视化管理，让生产状态能够被及时识别和响应。\n\n在质量控制方面，团队进一步细化了首件确认、过程巡检和成品抽检规则，并在重点工位增加数字化记录。每批产品的材料、设备、人员和检测结果均可追溯，为稳定交付提供了更可靠的依据。\n\n未来，公司将继续围绕减少等待、降低损耗、提升一次合格率展开改善，把精益理念落实到每一道工序，为客户提供更加稳定、高效的家具五金解决方案。",
+        "link": "news-detail.html?id=0",
+        "image": "assets/factory.png",
+        "imageAlt": "精益生产现场与质量检测",
+        "detailImage": "assets/factory.png",
+        "detailImageAlt": "锐界精工生产流程升级现场"
+      },
+      {
+        "date": "2026-06-08",
+        "title": "新品功能五金系列正式发布",
+        "summary": "面向现代家居场景，推出兼顾结构性能与安装效率的新一代产品方案。",
+        "body": "锐界精工新一代功能五金系列正式发布，产品覆盖连接件、静音铰链、隐藏滑轨及柜内照明等多个应用方向，面向定制家居、办公家具和商业空间提供系统化选择。\n\n新品在结构设计阶段充分考虑安装效率与使用寿命，通过模块化尺寸、快装结构和更友好的调节方式，减少现场安装步骤。同时，关键受力部件经过多轮疲劳测试与盐雾测试，以适应长期高频使用。\n\n公司同步完善了选型资料与技术支持服务，设计师和工程客户可根据柜体尺寸、承重要求及使用场景快速匹配产品。",
+        "link": "news-detail.html?id=1",
+        "image": "assets/product-set.png",
+        "imageAlt": "新一代家具功能五金产品",
+        "detailImage": "assets/product-set.png",
+        "detailImageAlt": "家具功能五金新品组合"
+      },
+      {
+        "date": "2026-05-26",
+        "title": "绿色制造：从材料到工艺的持续改善",
+        "summary": "推进能源管理与材料利用率提升，让可靠制造与环境责任同行。",
+        "body": "绿色制造不是单一设备的更新，而是贯穿产品全生命周期的持续改善。锐界精工从材料选用、工艺设计和包装运输三个方向入手，逐步降低生产过程中的能源与资源消耗。\n\n在生产现场，团队通过优化排产减少设备空转，回收可再利用金属边料，并以周转包装替代部分一次性材料。新的表面处理方案也在保证耐腐蚀性能的同时，进一步降低过程排放。\n\n公司将持续记录关键环境指标，并把绿色要求纳入供应商协同与新品评审，让品质、效率与责任成为长期制造能力的一部分。",
+        "link": "news-detail.html?id=2",
+        "image": "assets/hero-hardware.png",
+        "imageAlt": "绿色五金制造与材料管理",
+        "detailImage": "assets/factory.png",
+        "detailImageAlt": "节能高效的五金制造车间"
+      },
+      {
+        "date": "2026-05-12",
+        "title": "智能检测中心投入试运行",
+        "summary": "引入视觉测量与自动采集设备，进一步提升关键尺寸的检测效率。",
+        "body": "锐界精工智能检测中心已进入试运行阶段。中心配置视觉测量、轮廓分析和耐久测试设备，可对关键尺寸、表面状态与动作寿命进行更高效的综合验证。\n\n检测数据将与生产批次自动关联，帮助工程团队更快发现趋势并定位问题。对于新品开发，集中化检测也缩短了样件验证周期。\n\n试运行结束后，检测中心将逐步覆盖更多产品系列，并向客户提供更完整的质量数据支持。",
+        "link": "news-detail.html?id=3",
+        "image": "assets/factory.png",
+        "imageAlt": "智能视觉检测设备",
+        "detailImage": "assets/product-set.png",
+        "detailImageAlt": "五金产品质量检测"
+      },
+      {
+        "date": "2026-04-28",
+        "title": "校企合作培养精密制造新人才",
+        "summary": "与职业院校建立实践基地，为青年技术人才提供真实制造项目。",
+        "body": "锐界精工与本地职业院校共同建立精密制造实践基地，首批学生已完成安全、质量与基础工艺培训，并进入项目实践阶段。\n\n实践课程由企业工程师和院校教师联合设计，内容涵盖识图、测量、设备操作、质量分析和现场改善，让学生在真实项目中理解制造标准。\n\n公司希望通过长期合作，为行业培养更多兼具理论基础和现场能力的青年人才，也为企业持续创新建立人才储备。",
+        "link": "news-detail.html?id=4",
+        "image": "assets/factory.png",
+        "imageAlt": "精密制造人才实践培训",
+        "detailImage": "assets/hero-hardware.png",
+        "detailImageAlt": "校企合作制造实践项目"
+      }
+    ]
+  },
+  "contact": {
+    "bannerTitle": "联系我们",
+    "bannerSubtitle": "CONTACT US",
+    "bannerImage": "assets/factory.png",
+    "bannerImageAlt": "锐界精工联系与服务",
+    "eyebrow": "GET IN TOUCH",
+    "title": "期待与您建立联系",
+    "phone": "400-000-0000",
+    "wechat": "Ruijie-Service",
+    "email": "hello@example.com",
+    "address": "华南某工业园创新大道 88 号",
+    "businessHours": "周一至周六 08:30—17:30",
+    "mapLink": "https://maps.google.com/",
+    "mapLabel": "查看地图",
+    "formNamePlaceholder": "您的姓名",
+    "formPhonePlaceholder": "联系电话",
+    "formEmailPlaceholder": "电子邮箱",
+    "formCompanyPlaceholder": "公司名称",
+    "formMessagePlaceholder": "请输入您的需求",
+    "formSubmitText": "提交留言",
+    "formSuccessText": "提交成功，我们会尽快与您联系"
+  },
+  "footer": {
+    "description": "专注于家具功能五金的研发与制造，以稳定品质、精密工艺和持续创新，为居住空间提供可靠连接。",
+    "quickLinksTitle": "快速导航",
+    "productLinksTitle": "产品系列",
+    "contactTitle": "联系我们",
+    "footerText": "本站为脱敏前端设计演示，所有品牌与联系信息均为虚构。",
+    "copyright": "© 2026 锐界精工"
+  },
+  "theme": {
+    "primaryColor": "#df1838",
+    "secondaryColor": "#18191b",
+    "buttonColor": "#df1838"
+  },
+  "seo": {
+    "title": "锐界精工｜家具功能五金解决方案",
+    "description": "锐界精工专注家具连接件、滑轨、铰链与柜内照明等功能五金的研发、制造和服务。",
+    "keywords": "家具五金,功能五金,连接件,滑轨,铰链,柜内照明"
+  }
+}
