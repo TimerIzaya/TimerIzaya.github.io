@@ -152,6 +152,10 @@ GET /repos/TimerIzaya/TimerIzaya.github.io/contents/demo_0/content/site.json?ref
 
 ## 图片规则
 
+当前随站点部署的展示素材统一使用 WebP，`site.json` 和前台安全回退数据均引用 `.webp` 文件。原始 PNG 暂时保留在 `demo_0/assets/` 中，仅用于版本回滚，不参与正常页面加载。
+
+后台接受 JPG、JPEG、PNG 和 WebP。选择图片后只生成本地预览；发布时会在浏览器中缩放并优先编码为 WebP（质量 0.84），再使用随机 UUID 文件名逐张上传。只有当前浏览器无法编码 WebP 时，才安全回退为 JPG 或 PNG。JSON 始终只保存图片相对路径，不保存 Base64 数据。
+
 - 允许 JPG、JPEG、PNG 和 WebP；同时检查 MIME 类型和扩展名。
 - 禁止 SVG、HTML、JavaScript、PHP、可执行文件及其他非图片文件。
 - 单张原始图片默认最大 5 MB。

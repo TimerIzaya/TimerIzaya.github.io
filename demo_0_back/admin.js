@@ -230,12 +230,12 @@
   const ARRAY_DEFAULTS = Object.freeze({
     navigation: { key: "custom", label: "新菜单", href: "#" },
     stats: { number: "0", label: "新数据", description: "" },
-    productCategory: { name: "新分类", nameEn: "NEW CATEGORY", summary: "请输入分类简介", link: "products.html", image: "assets/product-set.png", imageAlt: "产品分类图片" },
+    productCategory: { name: "新分类", nameEn: "NEW CATEGORY", summary: "请输入分类简介", link: "products.html", image: "assets/product-set.webp", imageAlt: "产品分类图片" },
     advantageItem: { icon: "◆", name: "新优势", description: "请输入优势介绍" },
     processItem: { name: "新步骤", description: "请输入流程说明" },
-    caseItem: { name: "新案例", summary: "请输入案例简介", details: "请输入案例详细说明", link: "contact.html", image: "assets/factory.png", imageAlt: "案例图片" },
-    productItem: { name: "新产品", category: "家具连接件", summary: "请输入产品简介", details: "请输入产品详细说明", link: "contact.html", image: "assets/product-set.png", imageAlt: "产品图片" },
-    newsItem: { date: new Date().toISOString().slice(0, 10), title: "新资讯", summary: "请输入新闻简介", body: "请输入新闻正文", link: "news-detail.html", image: "assets/factory.png", imageAlt: "新闻图片", detailImage: "assets/factory.png", detailImageAlt: "新闻详情图片" }
+    caseItem: { name: "新案例", summary: "请输入案例简介", details: "请输入案例详细说明", link: "contact.html", image: "assets/factory.webp", imageAlt: "案例图片" },
+    productItem: { name: "新产品", category: "家具连接件", summary: "请输入产品简介", details: "请输入产品详细说明", link: "contact.html", image: "assets/product-set.webp", imageAlt: "产品图片" },
+    newsItem: { date: new Date().toISOString().slice(0, 10), title: "新资讯", summary: "请输入新闻简介", body: "请输入新闻正文", link: "news-detail.html", image: "assets/factory.webp", imageAlt: "新闻图片", detailImage: "assets/factory.webp", detailImageAlt: "新闻详情图片" }
   });
 
   const dom = {};

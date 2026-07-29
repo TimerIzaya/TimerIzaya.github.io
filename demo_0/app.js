@@ -6,7 +6,7 @@ const page = PAGE_KEYS.has(document.body.dataset.page) ? document.body.dataset.p
 // site.json 是正式内容源；此对象只在文件缺失、损坏或字段不合法时提供非空安全回退。
 const FALLBACK_SITE = {
   schemaVersion: 1,
-  updatedAt: "2026-07-28T00:00:00.000Z",
+  updatedAt: "2026-07-29T00:00:00.000Z",
   site: {
     siteName: "锐界精工企业展示网站",
     companyName: "锐界精工",
@@ -34,7 +34,7 @@ const FALLBACK_SITE = {
     primaryButtonLink: "products.html",
     secondaryButtonText: "了解我们",
     secondaryButtonLink: "about.html",
-    image: "assets/hero-hardware.png",
+    image: "assets/hero-hardware.webp",
     imageAlt: "现代五金生产与家具应用场景"
   },
   homeAbout: {
@@ -46,7 +46,7 @@ const FALLBACK_SITE = {
     body: "我们是一家专注家具功能五金研发、生产与服务的现代制造企业。持续投入精密加工与自动化检测，只为让每一次连接更加稳定、可靠、长久。",
     buttonText: "进一步了解",
     buttonLink: "about.html",
-    image: "assets/factory.png",
+    image: "assets/factory.webp",
     imageAlt: "锐界精工现代化生产车间"
   },
   productSection: {
@@ -54,9 +54,9 @@ const FALLBACK_SITE = {
     title: "产品中心",
     subtitle: "覆盖连接、支撑、滑动与照明的家具功能五金方案",
     categories: [
-      { name: "连接件系列", nameEn: "CONNECTOR SERIES", summary: "面向柜体与板式家具的稳定连接方案。", link: "products.html", image: "assets/product-set.png", imageAlt: "精密家具连接件系列" },
-      { name: "灯光系统", nameEn: "LIGHTING SYSTEM", summary: "兼顾照明效果与便捷安装的柜内灯光系统。", link: "products.html", image: "assets/hero-hardware.png", imageAlt: "家具柜内灯光五金系统" },
-      { name: "滑轨与铰链", nameEn: "SLIDE & HINGE", summary: "顺滑、静音且耐久的开合与承托系统。", link: "products.html", image: "assets/factory.png", imageAlt: "家具滑轨与铰链产品" }
+      { name: "连接件系列", nameEn: "CONNECTOR SERIES", summary: "面向柜体与板式家具的稳定连接方案。", link: "products.html", image: "assets/product-set.webp", imageAlt: "精密家具连接件系列" },
+      { name: "灯光系统", nameEn: "LIGHTING SYSTEM", summary: "兼顾照明效果与便捷安装的柜内灯光系统。", link: "products.html", image: "assets/hero-hardware.webp", imageAlt: "家具柜内灯光五金系统" },
+      { name: "滑轨与铰链", nameEn: "SLIDE & HINGE", summary: "顺滑、静音且耐久的开合与承托系统。", link: "products.html", image: "assets/factory.webp", imageAlt: "家具滑轨与铰链产品" }
     ]
   },
   stats: [
@@ -68,12 +68,12 @@ const FALLBACK_SITE = {
   aboutPage: {
     bannerTitle: "关于我们",
     bannerSubtitle: "ABOUT US",
-    bannerImage: "assets/factory.png",
+    bannerImage: "assets/factory.webp",
     bannerImageAlt: "锐界精工生产基地",
     storyEyebrow: "OUR STORY",
     storyTitle: "以精密制造\n成就可靠连接",
     storyBody: "锐界精工是一家专注家具功能五金的研发、制造与服务企业。我们用严谨的工程思维理解每一个连接结构，用标准化制造守护每一次产品交付。\n\n从材料选择、模具开发到精密加工和质量检测，团队始终围绕稳定、耐用、易安装持续改进。",
-    storyImage: "assets/factory.png",
+    storyImage: "assets/factory.webp",
     storyImageAlt: "锐界精工制造团队与车间",
     manufacturingEyebrow: "MANUFACTURING",
     manufacturingTitle: "智造实力",
@@ -81,7 +81,7 @@ const FALLBACK_SITE = {
     manufacturingBody: "自动化加工设备、标准化作业流程与全过程质量追溯共同构成稳定制造体系。",
     manufacturingButtonText: "联系我们",
     manufacturingButtonLink: "contact.html",
-    manufacturingImage: "assets/product-set.png",
+    manufacturingImage: "assets/product-set.webp",
     manufacturingImageAlt: "数字化五金生产设备"
   },
   advantages: {
@@ -111,24 +111,24 @@ const FALLBACK_SITE = {
     title: "案例展示",
     subtitle: "可靠五金服务多元家具与空间场景",
     items: [
-      { name: "定制家居连接系统", summary: "为全屋定制项目提供标准化连接件组合。", details: "通过统一规格与快装结构，帮助现场提升装配效率并保持稳定外观。", link: "contact.html", image: "assets/product-set.png", imageAlt: "定制家居五金连接系统案例" },
-      { name: "办公家具静音升级", summary: "面向高频使用空间优化滑轨与铰链体验。", details: "结合承重、耐久与静音要求完成选型，并提供安装调试建议。", link: "contact.html", image: "assets/hero-hardware.png", imageAlt: "办公家具滑轨铰链应用案例" },
-      { name: "商业空间柜内照明", summary: "将线性灯光与感应控制融入展示柜体。", details: "兼顾布线、散热和维护便利性，形成整洁一致的照明效果。", link: "contact.html", image: "assets/factory.png", imageAlt: "商业展示柜内灯光系统案例" }
+      { name: "定制家居连接系统", summary: "为全屋定制项目提供标准化连接件组合。", details: "通过统一规格与快装结构，帮助现场提升装配效率并保持稳定外观。", link: "contact.html", image: "assets/product-set.webp", imageAlt: "定制家居五金连接系统案例" },
+      { name: "办公家具静音升级", summary: "面向高频使用空间优化滑轨与铰链体验。", details: "结合承重、耐久与静音要求完成选型，并提供安装调试建议。", link: "contact.html", image: "assets/hero-hardware.webp", imageAlt: "办公家具滑轨铰链应用案例" },
+      { name: "商业空间柜内照明", summary: "将线性灯光与感应控制融入展示柜体。", details: "兼顾布线、散热和维护便利性，形成整洁一致的照明效果。", link: "contact.html", image: "assets/factory.webp", imageAlt: "商业展示柜内灯光系统案例" }
     ]
   },
   productsPage: {
     bannerTitle: "产品中心",
     bannerSubtitle: "PRODUCT CENTER",
-    bannerImage: "assets/hero-hardware.png",
+    bannerImage: "assets/hero-hardware.webp",
     bannerImageAlt: "家具五金产品组合",
     categoryTitle: "产品分类",
     allCategoryLabel: "全部产品",
     viewDetailsText: "查看详情",
     categories: ["家具连接件", "灯光照明系统", "滑轨系列", "铰链系列"],
     products: [
-      { name: "精密偏心连接件", category: "家具连接件", summary: "适用于板式家具的高强度隐蔽连接。", details: "结构稳定，安装便捷，适配多种柜体应用。", link: "contact.html", image: "assets/product-set.png", imageAlt: "精密偏心家具连接件" },
-      { name: "静音缓冲铰链", category: "铰链系列", summary: "让柜门开合轻柔顺畅。", details: "集成缓冲结构，兼顾耐久性能与安装调节效率。", link: "contact.html", image: "assets/product-set.png", imageAlt: "静音缓冲家具铰链" },
-      { name: "全拉出隐藏滑轨", category: "滑轨系列", summary: "隐藏安装并充分利用抽屉空间。", details: "顺滑承托，支持多向调节，适合中高端柜体。", link: "contact.html", image: "assets/product-set.png", imageAlt: "全拉出隐藏式抽屉滑轨" }
+      { name: "精密偏心连接件", category: "家具连接件", summary: "适用于板式家具的高强度隐蔽连接。", details: "结构稳定，安装便捷，适配多种柜体应用。", link: "contact.html", image: "assets/product-set.webp", imageAlt: "精密偏心家具连接件" },
+      { name: "静音缓冲铰链", category: "铰链系列", summary: "让柜门开合轻柔顺畅。", details: "集成缓冲结构，兼顾耐久性能与安装调节效率。", link: "contact.html", image: "assets/product-set.webp", imageAlt: "静音缓冲家具铰链" },
+      { name: "全拉出隐藏滑轨", category: "滑轨系列", summary: "隐藏安装并充分利用抽屉空间。", details: "顺滑承托，支持多向调节，适合中高端柜体。", link: "contact.html", image: "assets/product-set.webp", imageAlt: "全拉出隐藏式抽屉滑轨" }
     ]
   },
   news: {
@@ -136,7 +136,7 @@ const FALLBACK_SITE = {
     homeTitle: "新闻动态",
     bannerTitle: "新闻中心",
     bannerSubtitle: "NEWS CENTER",
-    bannerImage: "assets/factory.png",
+    bannerImage: "assets/factory.webp",
     bannerImageAlt: "锐界精工企业新闻",
     listEyebrow: "LATEST INFORMATION",
     listTitle: "企业资讯",
@@ -145,15 +145,15 @@ const FALLBACK_SITE = {
     detailBannerSubtitle: "NEWS DETAIL",
     sourceLabel: "锐界精工",
     items: [
-      { date: "2026-06-18", title: "企业精益生产体系完成新一轮升级", summary: "围绕产品一致性与交付效率，生产现场完成流程再造与检测节点优化。", body: "近日，锐界精工精益生产体系新一轮升级正式完成。\n\n团队进一步细化了首件确认、过程巡检和成品抽检规则。\n\n未来，公司将继续围绕提升一次合格率展开改善。", link: "news-detail.html?id=0", image: "assets/factory.png", imageAlt: "精益生产现场与质量检测", detailImage: "assets/factory.png", detailImageAlt: "锐界精工生产流程升级现场" },
-      { date: "2026-06-08", title: "新品功能五金系列正式发布", summary: "面向现代家居场景，推出兼顾结构性能与安装效率的新一代产品方案。", body: "锐界精工新一代功能五金系列正式发布。\n\n新品充分考虑安装效率与使用寿命。\n\n公司同步完善了选型资料与技术支持服务。", link: "news-detail.html?id=1", image: "assets/product-set.png", imageAlt: "新一代家具功能五金产品", detailImage: "assets/product-set.png", detailImageAlt: "家具功能五金新品组合" },
-      { date: "2026-05-26", title: "绿色制造：从材料到工艺的持续改善", summary: "推进能源管理与材料利用率提升，让可靠制造与环境责任同行。", body: "绿色制造是贯穿产品全生命周期的持续改善。\n\n团队逐步降低生产过程中的能源与资源消耗。\n\n公司将持续记录关键环境指标。", link: "news-detail.html?id=2", image: "assets/hero-hardware.png", imageAlt: "绿色五金制造与材料管理", detailImage: "assets/factory.png", detailImageAlt: "节能高效的五金制造车间" }
+      { date: "2026-06-18", title: "企业精益生产体系完成新一轮升级", summary: "围绕产品一致性与交付效率，生产现场完成流程再造与检测节点优化。", body: "近日，锐界精工精益生产体系新一轮升级正式完成。\n\n团队进一步细化了首件确认、过程巡检和成品抽检规则。\n\n未来，公司将继续围绕提升一次合格率展开改善。", link: "news-detail.html?id=0", image: "assets/factory.webp", imageAlt: "精益生产现场与质量检测", detailImage: "assets/factory.webp", detailImageAlt: "锐界精工生产流程升级现场" },
+      { date: "2026-06-08", title: "新品功能五金系列正式发布", summary: "面向现代家居场景，推出兼顾结构性能与安装效率的新一代产品方案。", body: "锐界精工新一代功能五金系列正式发布。\n\n新品充分考虑安装效率与使用寿命。\n\n公司同步完善了选型资料与技术支持服务。", link: "news-detail.html?id=1", image: "assets/product-set.webp", imageAlt: "新一代家具功能五金产品", detailImage: "assets/product-set.webp", detailImageAlt: "家具功能五金新品组合" },
+      { date: "2026-05-26", title: "绿色制造：从材料到工艺的持续改善", summary: "推进能源管理与材料利用率提升，让可靠制造与环境责任同行。", body: "绿色制造是贯穿产品全生命周期的持续改善。\n\n团队逐步降低生产过程中的能源与资源消耗。\n\n公司将持续记录关键环境指标。", link: "news-detail.html?id=2", image: "assets/hero-hardware.webp", imageAlt: "绿色五金制造与材料管理", detailImage: "assets/factory.webp", detailImageAlt: "节能高效的五金制造车间" }
     ]
   },
   contact: {
     bannerTitle: "联系我们",
     bannerSubtitle: "CONTACT US",
-    bannerImage: "assets/factory.png",
+    bannerImage: "assets/factory.webp",
     bannerImageAlt: "锐界精工联系与服务",
     eyebrow: "GET IN TOUCH",
     title: "期待与您建立联系",
@@ -533,7 +533,7 @@ function linkElement(href, className, textValue) {
 
 function imageElement(src, alt, className, options = {}) {
   const image = element("img", className);
-  image.src = isSafeImagePath(src) ? src : "assets/factory.png";
+  image.src = isSafeImagePath(src) ? src : "assets/factory.webp";
   image.alt = cleanText(alt, "网站内容图片", 200);
   image.decoding = "async";
   if (options.eager) {
@@ -542,7 +542,7 @@ function imageElement(src, alt, className, options = {}) {
   } else {
     image.loading = "lazy";
   }
-  const fallback = isSafeImagePath(options.fallback) ? options.fallback : "assets/factory.png";
+  const fallback = isSafeImagePath(options.fallback) ? options.fallback : "assets/factory.webp";
   image.addEventListener("error", () => {
     if (image.dataset.fallbackApplied === "true") {
       image.hidden = true;
@@ -712,7 +712,7 @@ function createNewsCards(data, count = 3) {
   data.news.items.slice(0, count).forEach((item, index) => {
     const card = linkElement(item.link, "news-card");
     const cover = element("div", "news-cover");
-    cover.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.png" }));
+    cover.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.webp" }));
     const dateTag = element("time", "date-tag", item.date.slice(8, 10));
     dateTag.dateTime = item.date;
     dateTag.append(element("small", "", item.date.slice(0, 7).replace("-", " / ")));
@@ -751,7 +751,7 @@ function createCasesSection(data) {
   data.cases.items.forEach(item => {
     const card = linkElement(item.link, "case-card");
     const imageWrap = element("div", "case-image");
-    imageWrap.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.png" }));
+    imageWrap.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.webp" }));
     const body = element("div", "case-body");
     body.append(element("h3", "", item.name), element("p", "case-summary", item.summary), element("p", "case-details", item.details));
     card.append(imageWrap, body);
@@ -765,7 +765,7 @@ function createCasesSection(data) {
 function createHome(data) {
   const main = element("main");
   const hero = element("section", "hero");
-  hero.append(imageElement(data.hero.image, data.hero.imageAlt, "hero-media", { eager: true, fallback: "assets/hero-hardware.png" }));
+  hero.append(imageElement(data.hero.image, data.hero.imageAlt, "hero-media", { eager: true, fallback: "assets/hero-hardware.webp" }));
   const heroContainer = element("div", "container");
   const copy = element("div", "hero-copy");
   copy.append(element("div", "eyebrow", data.hero.eyebrow));
@@ -783,7 +783,7 @@ function createHome(data) {
   aboutContainer.append(sectionHead(data.homeAbout.sectionEyebrow, data.homeAbout.sectionTitle));
   const introGrid = element("div", "intro-grid");
   const introImage = element("div", "intro-image");
-  introImage.append(imageElement(data.homeAbout.image, data.homeAbout.imageAlt, "media-img", { fallback: "assets/factory.png" }));
+  introImage.append(imageElement(data.homeAbout.image, data.homeAbout.imageAlt, "media-img", { fallback: "assets/factory.webp" }));
   const introCopy = element("div", "intro-copy");
   introCopy.append(element("div", "sub", data.homeAbout.subtitle));
   const introTitle = element("h3", "", data.homeAbout.title);
@@ -800,7 +800,7 @@ function createHome(data) {
   const categoryGrid = element("div", "category-grid");
   data.productSection.categories.forEach((item, index) => {
     const card = linkElement(item.link, "category-card");
-    card.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/product-set.png" }));
+    card.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/product-set.webp" }));
     const info = element("div", "category-info");
     info.append(element("h3", "", item.name), element("p", "category-en", item.nameEn), element("p", "category-summary", item.summary), element("b", "", String(index + 1).padStart(2, "0")));
     card.append(info);
@@ -844,7 +844,7 @@ function createAbout(data) {
   const storySection = element("section", "section");
   const storyContainer = element("div", "container about-story");
   const photo = element("div", "about-photo");
-  photo.append(imageElement(data.aboutPage.storyImage, data.aboutPage.storyImageAlt, "media-img", { fallback: "assets/factory.png" }));
+  photo.append(imageElement(data.aboutPage.storyImage, data.aboutPage.storyImageAlt, "media-img", { fallback: "assets/factory.webp" }));
   const story = element("div", "story");
   story.append(element("div", "eyebrow story-eyebrow", data.aboutPage.storyEyebrow), multilineHeading(data.aboutPage.storyTitle));
   const redline = element("div", "redline");
@@ -879,7 +879,7 @@ function createAbout(data) {
   const manufacturingCopy = element("div", "intro-copy");
   manufacturingCopy.append(element("h3", "", data.aboutPage.manufacturingHeading), element("p", "", data.aboutPage.manufacturingBody), learnLink(data.aboutPage.manufacturingButtonLink, data.aboutPage.manufacturingButtonText));
   const manufacturingImage = element("div", "intro-image");
-  manufacturingImage.append(imageElement(data.aboutPage.manufacturingImage, data.aboutPage.manufacturingImageAlt, "media-img", { fallback: "assets/product-set.png" }));
+  manufacturingImage.append(imageElement(data.aboutPage.manufacturingImage, data.aboutPage.manufacturingImageAlt, "media-img", { fallback: "assets/product-set.webp" }));
   manufacturingGrid.append(manufacturingCopy, manufacturingImage);
   manufacturingContainer.append(manufacturingGrid);
   manufacturingSection.append(manufacturingContainer);
@@ -912,7 +912,7 @@ function createProducts(data) {
     article.dataset.category = String(Math.max(0, data.productsPage.categories.indexOf(item.category)));
     const productLink = linkElement(item.link, "product-link");
     const imageWrap = element("div", "product-img");
-    imageWrap.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/product-set.png" }));
+    imageWrap.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/product-set.webp" }));
     imageWrap.append(element("span", "product-hover", data.productsPage.viewDetailsText));
     const body = element("div", "product-body");
     body.append(element("h2", "product-name", item.name), element("p", "product-summary", item.summary), element("p", "product-details", item.details));
@@ -936,7 +936,7 @@ function createNews(data) {
   data.news.items.forEach(item => {
     const row = element("article", "news-row");
     const imageLink = linkElement(item.link, "news-row-img");
-    imageLink.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.png" }));
+    imageLink.append(imageElement(item.image, item.imageAlt, "media-img", { fallback: "assets/factory.webp" }));
     const copy = element("div");
     copy.append(element("div", "meta", `${item.date}　/　${data.news.listTitle}`));
     const title = element("h2");
@@ -969,7 +969,7 @@ function createNewsDetail(data) {
   const header = element("header");
   header.append(element("h1", "", item.title), element("div", "article-meta", `发布时间：${item.date}　　来源：${data.news.sourceLabel}`));
   article.append(header);
-  article.append(imageElement(item.image, item.imageAlt, "article-cover", { eager: true, fallback: "assets/factory.png" }));
+  article.append(imageElement(item.image, item.imageAlt, "article-cover", { eager: true, fallback: "assets/factory.webp" }));
   splitParagraphs(item.body).forEach((paragraph, paragraphIndex) => {
     if (paragraphIndex === 1) article.append(imageElement(item.detailImage, item.detailImageAlt, "article-inline", { fallback: item.image }));
     article.append(element("p", "", paragraph));
